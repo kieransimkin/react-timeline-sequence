@@ -68,6 +68,14 @@ Consumers install the GitHub Packages copy as the scoped name and must configure
 - **Verification:** the consuming build resolves the selected name and version from the intended registry.
 - **Limit:** the two registry identifiers refer to equivalent release contents, but they are distinct npm package names.
 
+### GitHub Packages publishing tries to clone a nonexistent repository
+
+- **Symptom:** the publish job exits with code 128 after running `git --no-replace-objects ls-remote ssh://git@github.com/github-package/package.git`, followed by `Permission denied (publickey)`.
+- **Cause when verified:** npm interpreted the unprefixed `github-package/package` argument as GitHub repository shorthand instead of a local folder. npm package-spec documentation requires local folders to begin with `./` or an absolute path.
+- **Correction:** publish from `./github-package/package`.
+- **Verification:** the release workflow must publish the scoped package without invoking `git ls-remote`, and the exact version must become visible under `@kieransimkin/react-timeline-sequence` in GitHub Packages.
+- **Limit:** adding SSH credentials would conceal the path error and is not a valid fix.
+
 ### CI reports the Vitest redirect-mock path-traversal advisory
 
 - **Symptom:** `npm audit` reports `GHSA-82fw-gwwq-j7x9` against Vitest and `@vitest/mocker` versions below 4.1.11.

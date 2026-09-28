@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.3 — 2026-09-28
+
+- Publish the GitHub Packages copy from an explicit local folder path.
+- Verify an existing npm version by tarball checksum before skipping a duplicate upload.
+- Complete the npm trusted-publisher bootstrap and document the verified recovery path.
+
 ## 0.1.2 — 2026-09-28
 
 - Build and retain an installable package artifact during every CI run.
