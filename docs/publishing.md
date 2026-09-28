@@ -14,24 +14,19 @@ One successful GitHub release publishes:
 
 The release workflow builds and tests once, then both registry jobs consume that retained artifact. The GitHub Packages copy changes the package name in the extracted manifest and removes the source-only `prepare` hook before publishing; its already-built `dist/` contents are unchanged.
 
-## One-time npm bootstrap
+## npm bootstrap completed
 
-The unscoped npm name `react-timeline-sequence` was unregistered when checked on 28 September 2026. npm trusted publishing is configured from an existing package's settings, so the first publication needs a temporary granular npm access token with publishing permission and 2FA bypass enabled.
+`react-timeline-sequence@0.1.2` was published directly on 28 September 2026 after account-level 2FA was enabled. The trusted publisher was then created with npm CLI 12.1.0 using:
 
-1. Add the token as the repository secret `NPM_TOKEN`.
-2. Publish the first GitHub release whose tag matches `package.json` exactly, including the leading `v`.
-3. In the resulting npm package settings, add a GitHub Actions trusted publisher with:
+- owner: `kieransimkin`;
+- repository: `react-timeline-sequence`;
+- workflow filename: `release.yml`;
+- environment: `npm`;
+- allowed action: direct `npm publish`.
 
-   - owner: `kieransimkin`;
-   - repository: `react-timeline-sequence`;
-   - workflow filename: `release.yml`;
-   - environment: `npm`;
-   - allowed action: direct `npm publish`.
+No `NPM_TOKEN` repository secret was created. Later releases use short-lived GitHub OIDC credentials and receive npm provenance automatically. The workflow pins npm CLI 12.1.0 because trusted-publisher management and publishing require a current npm CLI and Node runtime.
 
-4. Remove the `NPM_TOKEN` repository secret. Later releases use short-lived GitHub OIDC credentials and receive npm provenance automatically. The workflow pins npm CLI 12.1.0 because trusted publishing requires npm 11.5.1 or later and Node 22.14 or later.
-5. After trusted publishing works, set npm publishing access to require 2FA and disallow traditional tokens.
-
-Do not record the bootstrap token in a file, command log, issue, release note or workflow.
+The release workflow treats a matching pre-existing npm version as successful only when the registry's SHA-1 tarball checksum exactly matches the canonical release artifact. A different checksum fails the job. This makes the manually bootstrapped `0.1.2` GitHub release idempotent without hiding version-content drift.
 
 ## GitHub Packages
 
@@ -52,10 +47,18 @@ Consumers install the GitHub Packages copy as the scoped name and must configure
 ### npm publication reports an authentication error
 
 - **Symptom:** the npmjs job reaches `npm publish` but reports that it is not authorised.
-- **Cause:** the first package has not been bootstrapped with `NPM_TOKEN`, or the trusted-publisher owner, repository, workflow filename, environment or allowed action does not exactly match the workflow.
-- **Correction:** for the first publication only, add the temporary granular token described above. For later releases, compare every trusted-publisher field with this document and keep `id-token: write` on the npmjs job.
+- **Cause:** account-level 2FA is not enabled, or the trusted-publisher owner, repository, workflow filename, environment or allowed action does not exactly match the workflow.
+- **Correction:** keep account-level 2FA enabled. Compare every trusted-publisher field with this document and keep `id-token: write` on the npmjs job.
 - **Verification:** the workflow succeeds and the exact release version is visible under `react-timeline-sequence` on npmjs.
 - **Limit:** do not weaken account 2FA or retain a long-lived publishing token to conceal a configuration mismatch.
+
+### npm 10 exits after showing the browser authentication link
+
+- **Symptom:** `npm publish` prints an `https://www.npmjs.com/auth/cli/...` link and then reports `Exit handler never called!` before the browser verification completes.
+- **Cause when observed:** npm CLI 10.8.3 hit the web-auth exit bug tracked at <https://github.com/npm/cli/issues/7642>.
+- **Correction:** complete the security-key challenge from the printed link, select npm's five-minute challenge-skip option when offered, then retry the identical publish immediately. Use the pinned project-wide npm 12.1.0 CLI for trusted-publisher management.
+- **Verification:** the immediate retry published `react-timeline-sequence@0.1.2`, and `npm trust list` returned the expected GitHub repository, workflow and environment.
+- **Limit:** never paste an OTP, recovery code or npm credential into command logs or chat. The five-minute authorization is short-lived and does not replace normal 2FA.
 
 ### The GitHub Packages copy has a different import name
 

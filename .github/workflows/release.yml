@@ -62,15 +62,34 @@ jobs:
           node-version: 24
           registry-url: https://registry.npmjs.org/
           package-manager-cache: false
+      - name: Check for an identical existing npm publication
+        id: npm_state
+        shell: bash
+        run: |
+          set -euo pipefail
+          tarball=(release-artifacts/*.tgz)
+          version="$(tar -xOf "${tarball[0]}" package/package.json | node -e "let input=''; process.stdin.on('data', chunk => input += chunk).on('end', () => console.log(JSON.parse(input).version))")"
+          local_shasum="$(sha1sum "${tarball[0]}" | cut -d' ' -f1)"
+          published_shasum="$(npm view "react-timeline-sequence@${version}" dist.shasum 2>/dev/null || true)"
+          if [[ -n "$published_shasum" ]]; then
+            if [[ "$published_shasum" != "$local_shasum" ]]; then
+              echo "react-timeline-sequence@${version} exists with a different tarball checksum" >&2
+              exit 1
+            fi
+            echo "already_published=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "already_published=false" >> "$GITHUB_OUTPUT"
+          fi
       - name: Use a trusted-publishing-capable npm CLI
+        if: steps.npm_state.outputs.already_published != 'true'
         run: npm install --global npm@12.1.0
       - name: Publish with the one-time bootstrap token
-        if: env.BOOTSTRAP_NPM_TOKEN != ''
+        if: steps.npm_state.outputs.already_published != 'true' && env.BOOTSTRAP_NPM_TOKEN != ''
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: npm publish release-artifacts/*.tgz --access public
       - name: Publish with npm trusted publishing
-        if: env.BOOTSTRAP_NPM_TOKEN == ''
+        if: steps.npm_state.outputs.already_published != 'true' && env.BOOTSTRAP_NPM_TOKEN == ''
         run: npm publish release-artifacts/*.tgz --access public
 
   publish-github-packages:
