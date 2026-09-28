@@ -1,0 +1,64 @@
+{
+  "name": "react-timeline-sequence",
+  "version": "0.1.0",
+  "description": "A reusable React audio timeline with shared playback, zoom, seeking and sequence lanes.",
+  "keywords": [
+    "react",
+    "audio",
+    "timeline",
+    "sequence",
+    "waveform"
+  ],
+  "license": "MIT",
+  "author": "Kieran Simkin",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kieransimkin/react-timeline-sequence.git"
+  },
+  "homepage": "https://github.com/kieransimkin/react-timeline-sequence#readme",
+  "bugs": {
+    "url": "https://github.com/kieransimkin/react-timeline-sequence/issues"
+  },
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./styles.css": "./dist/style.css"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "scripts": {
+    "build": "vite build && tsc -p tsconfig.build.json",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.1.16",
+    "@types/react-dom": "^19.1.9",
+    "@vitejs/plugin-react": "^5.0.4",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
+    "typescript": "^5.9.3",
+    "vite": "^7.1.9",
+    "vitest": "^3.2.4"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
