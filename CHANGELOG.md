@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.2 — 2026-09-28
+
+- Build and retain an installable package artifact during every CI run.
+- Publish GitHub releases to npmjs, GitHub Packages and the GitHub release assets.
+- Verify that a release tag exactly matches the package version before publishing.
+- Update Vitest to the maintained 4.1 line containing the path-traversal fix.
+
 ## 0.1.1 — 2026-09-28
 
 - Build distributable files automatically when the package is installed from GitHub.

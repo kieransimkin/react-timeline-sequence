@@ -18,6 +18,8 @@ npm install github:kieransimkin/react-timeline-sequence#v0.1.1
 
 React and React DOM 18 or later are peer dependencies.
 
+Published releases are also mirrored to GitHub Packages as `@kieransimkin/react-timeline-sequence`. See [the publishing guide](docs/publishing.md) for registry setup and release details.
+
 ## Use
 
 ```tsx
@@ -100,6 +102,8 @@ npm run build
 ```
 
 The build emits ESM, CommonJS, TypeScript declarations and one CSS file under `dist/`.
+
+CI runs the type check, tests and production build, then retains an installable package artifact. Publishing a GitHub release sends the verified package to npmjs and GitHub Packages and attaches the tarball and checksum to the release.
 
 ## Scope
 

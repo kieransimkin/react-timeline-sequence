@@ -18,7 +18,17 @@ jobs:
         with:
           node-version: 24
           cache: npm
-      - run: npm ci
+      - run: npm ci --ignore-scripts
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
+      - name: Pack the tested module
+        run: |
+          mkdir -p package-artifacts
+          npm pack --ignore-scripts --pack-destination package-artifacts
+      - name: Retain the installable package
+        uses: actions/upload-artifact@v4
+        with:
+          name: react-timeline-sequence-${{ github.sha }}
+          path: package-artifacts/*.tgz
+          if-no-files-found: error

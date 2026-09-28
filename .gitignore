@@ -1,5 +1,7 @@
 node_modules/
 dist/
 coverage/
+package-artifacts/
+.release-test/
 *.log
 .DS_Store

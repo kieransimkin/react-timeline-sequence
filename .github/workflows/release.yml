@@ -1,0 +1,122 @@
+name: Release
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build and verify release package
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          package-manager-cache: false
+      - run: npm ci --ignore-scripts
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+      - name: Verify release tag matches package version
+        if: github.event_name == 'release'
+        env:
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+        run: npm run verify:release -- "$RELEASE_TAG"
+      - name: Pack release artifact
+        run: |
+          mkdir -p release-artifacts
+          npm pack --ignore-scripts --pack-destination release-artifacts
+          sha256sum release-artifacts/*.tgz > release-artifacts/SHA256SUMS
+      - name: Upload verified release artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: react-timeline-sequence-release
+          path: release-artifacts/*
+          if-no-files-found: error
+
+  publish-npm:
+    name: Publish to npmjs
+    if: github.event_name == 'release'
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: npm
+      url: https://www.npmjs.com/package/react-timeline-sequence
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      BOOTSTRAP_NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+    steps:
+      - uses: actions/download-artifact@v5
+        with:
+          name: react-timeline-sequence-release
+          path: release-artifacts
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org/
+          package-manager-cache: false
+      - name: Use a trusted-publishing-capable npm CLI
+        run: npm install --global npm@12.1.0
+      - name: Publish with the one-time bootstrap token
+        if: env.BOOTSTRAP_NPM_TOKEN != ''
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish release-artifacts/*.tgz --access public
+      - name: Publish with npm trusted publishing
+        if: env.BOOTSTRAP_NPM_TOKEN == ''
+        run: npm publish release-artifacts/*.tgz --access public
+
+  publish-github-packages:
+    name: Publish to GitHub Packages
+    if: github.event_name == 'release'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/download-artifact@v5
+        with:
+          name: react-timeline-sequence-release
+          path: release-artifacts
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          registry-url: https://npm.pkg.github.com/
+          package-manager-cache: false
+      - name: Prepare the scoped GitHub Packages manifest
+        run: |
+          mkdir -p github-package
+          tar -xzf release-artifacts/*.tgz -C github-package
+          node scripts/prepare-github-package.mjs github-package/package
+      - name: Publish the scoped package
+        env:
+          NODE_AUTH_TOKEN: ${{ github.token }}
+        run: npm publish github-package/package --ignore-scripts --registry=https://npm.pkg.github.com/
+
+  github-release-assets:
+    name: Attach package to GitHub release
+    if: github.event_name == 'release'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v5
+        with:
+          name: react-timeline-sequence-release
+          path: release-artifacts
+      - name: Upload tarball and checksum
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+          REPOSITORY: ${{ github.repository }}
+        run: gh release upload "$RELEASE_TAG" release-artifacts/* --repo "$REPOSITORY" --clobber
