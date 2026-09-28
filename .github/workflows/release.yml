@@ -11,7 +11,7 @@ permissions:
 jobs:
   build:
     name: Build and verify release package
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
@@ -43,7 +43,7 @@ jobs:
     name: Publish to npmjs
     if: github.event_name == 'release'
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     environment:
       name: npm
       url: https://www.npmjs.com/package/react-timeline-sequence
@@ -77,7 +77,7 @@ jobs:
     name: Publish to GitHub Packages
     if: github.event_name == 'release'
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
       packages: write
@@ -106,7 +106,7 @@ jobs:
     name: Attach package to GitHub release
     if: github.event_name == 'release'
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: write
     steps:
