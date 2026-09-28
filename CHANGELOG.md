@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.1 — 2026-09-28
+
+- Build distributable files automatically when the package is installed from GitHub.
+
 ## 0.1.0 — 2026-09-28
 
 - Extract the shared audio transport and horizontal sequence timeline from StemLab.

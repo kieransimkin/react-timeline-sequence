@@ -13,7 +13,7 @@ npm install react-timeline-sequence
 Until an npm release is published, install the GitHub repository directly:
 
 ```bash
-npm install github:kieransimkin/react-timeline-sequence
+npm install github:kieransimkin/react-timeline-sequence#v0.1.1
 ```
 
 React and React DOM 18 or later are peer dependencies.

@@ -1,6 +1,6 @@
 {
   "name": "react-timeline-sequence",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A reusable React audio timeline with shared playback, zoom, seeking and sequence lanes.",
   "keywords": [
     "react",
@@ -41,6 +41,7 @@
   ],
   "scripts": {
     "build": "vite build && tsc -p tsconfig.build.json",
+    "prepare": "npm run build",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },
