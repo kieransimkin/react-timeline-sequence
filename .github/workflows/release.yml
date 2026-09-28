@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@v7
         with:
           node-version: 24
           package-manager-cache: false
@@ -33,7 +33,7 @@ jobs:
           npm pack --ignore-scripts --pack-destination release-artifacts
           sha256sum release-artifacts/*.tgz > release-artifacts/SHA256SUMS
       - name: Upload verified release artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: react-timeline-sequence-release
           path: release-artifacts/*
@@ -53,11 +53,11 @@ jobs:
     env:
       BOOTSTRAP_NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
     steps:
-      - uses: actions/download-artifact@v5
+      - uses: actions/download-artifact@v7
         with:
           name: react-timeline-sequence-release
           path: release-artifacts
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@v7
         with:
           node-version: 24
           registry-url: https://registry.npmjs.org/
@@ -83,11 +83,11 @@ jobs:
       packages: write
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/download-artifact@v5
+      - uses: actions/download-artifact@v7
         with:
           name: react-timeline-sequence-release
           path: release-artifacts
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@v7
         with:
           node-version: 24
           registry-url: https://npm.pkg.github.com/
@@ -110,7 +110,7 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/download-artifact@v5
+      - uses: actions/download-artifact@v7
         with:
           name: react-timeline-sequence-release
           path: release-artifacts
