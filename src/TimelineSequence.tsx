@@ -90,12 +90,12 @@ export function TimelineSequence({
     setCurrentTime(time);
     onTimeChange?.(time);
     const scroller = scrollerRef.current;
-    if (!scroller || !follow || !isPlaying) return;
+    if (!scroller || !follow || audioRef.current?.paused) return;
     const x = labelWidth + time * pixelsPerSecond;
     const right = scroller.scrollLeft + scroller.clientWidth;
     const margin = Math.min(180, scroller.clientWidth * 0.2);
     if (x > right - margin) scroller.scrollLeft = Math.max(0, x - scroller.clientWidth + margin);
-  }, [follow, isPlaying, labelWidth, onTimeChange, pixelsPerSecond]);
+  }, [follow, labelWidth, onTimeChange, pixelsPerSecond]);
 
   const stopAnimation = useCallback(() => {
     if (animationRef.current !== null) cancelAnimationFrame(animationRef.current);
