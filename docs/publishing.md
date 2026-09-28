@@ -4,6 +4,8 @@ Every pull request and push to `main` installs dependencies without lifecycle sc
 
 Publishing starts only when a GitHub release is published. A manual `workflow_dispatch` builds and validates the release artifact but does not publish it.
 
+The only manual-publish exception is the explicit `publish_npm` recovery input. It requires an existing `release_tag`, runs the same tag/version check and artifact build, and retries only the npmjs job. GitHub Packages and release assets remain tied to the original GitHub release event.
+
 ## Release destinations
 
 One successful GitHub release publishes:
@@ -59,6 +61,14 @@ Consumers install the GitHub Packages copy as the scoped name and must configure
 - **Correction:** complete the security-key challenge from the printed link, select npm's five-minute challenge-skip option when offered, then retry the identical publish immediately. Use the pinned project-wide npm 12.1.0 CLI for trusted-publisher management.
 - **Verification:** the immediate retry published `react-timeline-sequence@0.1.2`, and `npm trust list` returned the expected GitHub repository, workflow and environment.
 - **Limit:** never paste an OTP, recovery code or npm credential into command logs or chat. The five-minute authorization is short-lived and does not replace normal 2FA.
+
+### npm 12 refuses the release tarball as a Git dependency
+
+- **Symptom:** trusted publishing reaches `npm publish` but fails with `EALLOWGIT`, `Fetching packages of type "git" have been disabled`, and a refused target beginning `github:release-artifacts/`.
+- **Cause when verified:** npm interpreted the unprefixed `release-artifacts/<name>.tgz` argument as GitHub shorthand. npm's publish documentation requires relative folders and tarballs to begin with `./`.
+- **Correction:** publish `./release-artifacts/*.tgz`. If the GitHub release event has already completed its other jobs, dispatch `release.yml` from `main` with the exact existing `release_tag` and `publish_npm=true`; the workflow rechecks tag/version identity and retries only npmjs.
+- **Verification:** the npm job succeeds through OIDC and the exact version is visible on npm with provenance.
+- **Limit:** do not move an existing release tag or disable npm's Git-fetch policy to conceal a path parsing error.
 
 ### The GitHub Packages copy has a different import name
 

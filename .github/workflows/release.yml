@@ -4,6 +4,16 @@ on:
   release:
     types: [published]
   workflow_dispatch:
+    inputs:
+      release_tag:
+        description: Existing release tag to verify for an npm-only retry
+        required: false
+        type: string
+      publish_npm:
+        description: Publish the verified artifact to npm using trusted publishing
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: read
@@ -23,9 +33,9 @@ jobs:
       - run: npm test
       - run: npm run build
       - name: Verify release tag matches package version
-        if: github.event_name == 'release'
+        if: github.event_name == 'release' || inputs.publish_npm == true
         env:
-          RELEASE_TAG: ${{ github.event.release.tag_name }}
+          RELEASE_TAG: ${{ github.event_name == 'release' && github.event.release.tag_name || inputs.release_tag }}
         run: npm run verify:release -- "$RELEASE_TAG"
       - name: Pack release artifact
         run: |
@@ -41,7 +51,7 @@ jobs:
 
   publish-npm:
     name: Publish to npmjs
-    if: github.event_name == 'release'
+    if: github.event_name == 'release' || inputs.publish_npm == true
     needs: build
     runs-on: ubuntu-24.04
     environment:
@@ -87,10 +97,10 @@ jobs:
         if: steps.npm_state.outputs.already_published != 'true' && env.BOOTSTRAP_NPM_TOKEN != ''
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: npm publish release-artifacts/*.tgz --access public
+        run: npm publish ./release-artifacts/*.tgz --access public
       - name: Publish with npm trusted publishing
         if: steps.npm_state.outputs.already_published != 'true' && env.BOOTSTRAP_NPM_TOKEN == ''
-        run: npm publish release-artifacts/*.tgz --access public
+        run: npm publish ./release-artifacts/*.tgz --access public
 
   publish-github-packages:
     name: Publish to GitHub Packages
