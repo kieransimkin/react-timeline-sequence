@@ -4,6 +4,15 @@ A reusable React control for audio playback against one shared horizontal timeli
 
 It was extracted from [StemLab](https://github.com/kieransimkin/stemlab), but it has no StemLab, backend or audio-analysis dependency.
 
+## Loops (unreleased patch)
+
+Supply `loops` to add sample-based regions, a loop selector, an enable switch,
+Zoom to loop, and buffered repeat playback through the same transport/playhead.
+Looping is off until the user selects and enables a region. See
+[the loop API and integration guide](docs/loops.md) for the sample contract,
+resource lifecycle, examples and tests. Existing callers without `loops` retain
+normal full-song playback.
+
 ## Install
 
 ```bash
@@ -75,7 +84,7 @@ The built-in lane renderers cover:
 - summary chips, text and artifact links;
 - custom React nodes for application-specific content.
 
-Every timed item uses seconds on the shared media timeline. The host remains responsible for loading and validating data; the control does not fetch analysis files or assume an API.
+Lane items use seconds on the shared media timeline. The new `TimelineLoop` contract uses native source sample frames, converted using its explicit sample rate. The host remains responsible for loading and validating data; the control does not fetch analysis files or assume an API.
 
 ## Styling
 

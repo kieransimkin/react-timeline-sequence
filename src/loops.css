@@ -1,0 +1,15 @@
+/* Loop state uses text/pressed controls as well as colour. */
+.rts-toolbar { flex-shrink: 0; }
+.rts-loop-controls { grid-column: 1 / -1; display: flex; align-items: center; flex-wrap: wrap; gap: 12px; padding: 7px 0 3px; border-top: 1px solid var(--rts-line); font-size: 12px; }
+.rts-loop-controls label { display: flex; gap: 7px; align-items: center; }
+.rts-loop-controls select { max-width: min(420px, 70vw); background: var(--rts-panel-2); color: var(--rts-text); border: 1px solid var(--rts-line); padding: 5px 8px; border-radius: 6px; }
+.rts-loop-controls output { color: var(--rts-muted); font-variant-numeric: tabular-nums; }
+.rts-loop-controls a { color: var(--rts-accent-2); }
+.rts-loop-controls select:focus-visible, .rts-loop-region:focus-visible { outline: 2px solid var(--rts-accent); outline-offset: 2px; }
+.rts-loop-status { color: var(--rts-accent); }
+.rts-loop-error { grid-column: 1 / -1; color: #ffb4a9; font-size: 12px; }
+.rts-lane-loops { --rts-lane-height: 64px; }
+.rts-loop-region { position: absolute; top: 12px; height: 40px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; text-align: left; border-radius: 6px; border: 1px solid var(--rts-accent-2); background: #79c0ff25; color: var(--rts-text); cursor: pointer; padding: 0 8px; font-size: 11px; }
+.rts-loop-region[aria-pressed=true] { border: 2px solid var(--rts-accent); background: #7ee78738; }
+.rts-loop-shade { position: absolute; top: 34px; bottom: 0; background: #7ee78709; border-left: 2px solid var(--rts-accent); border-right: 2px solid var(--rts-accent); pointer-events: none; z-index: 19; }
+.rts-loop-shade.is-disabled { border-style: dashed; opacity: .55; }

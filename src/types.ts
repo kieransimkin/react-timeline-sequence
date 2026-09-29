@@ -57,8 +57,23 @@ export interface TimelineWindow {
   end: number;
 }
 
+/** Source sample frames; endSample is EXCLUSIVE. audioSrc, when present, is an exact
+ * PCM/WAV excerpt of this region (not the full master or an encoder-padded MP3). */
+export interface TimelineLoop {
+  id: string;
+  label?: string;
+  startSample: number;
+  endSample: number;
+  sampleRate: number;
+  audioSrc?: string;
+  downloadUrl?: string;
+}
+
 export interface TimelineSequenceProps {
   audioSrc: string;
+  loops?: readonly TimelineLoop[];
+  onLoopSelect?: (loop: TimelineLoop | null) => void;
+  onLoopEnabledChange?: (enabled: boolean) => void;
   lanes: readonly TimelineLane[];
   title?: ReactNode;
   subtitle?: ReactNode;
