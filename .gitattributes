@@ -1,0 +1,2 @@
+# Keep source and package inputs identical across Windows and CI.
+* text=auto eol=lf

@@ -4,7 +4,7 @@ A reusable React control for audio playback against one shared horizontal timeli
 
 It was extracted from [StemLab](https://github.com/kieransimkin/stemlab), but it has no StemLab, backend or audio-analysis dependency.
 
-## Loops (unreleased patch)
+## Loop regions and buffered playback
 
 Supply `loops` to add sample-based regions, a loop selector, an enable switch,
 Zoom to loop, and buffered repeat playback through the same transport/playhead.

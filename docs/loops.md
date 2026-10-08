@@ -1,7 +1,6 @@
 # Loop regions and buffered playback
 
-This is an **unreleased, backwards-compatible patch**, not a claim that a new
-npm version has been published. The package version is intentionally unchanged.
+Available in version **0.2.0**. The loop API is optional and preserves the existing timeline and transport API.
 
 ## Use
 
