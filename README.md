@@ -1,5 +1,12 @@
 # react-timeline-sequence
 
+[![React Timeline Sequence logo](https://raw.githubusercontent.com/kieransimkin/react-timeline-sequence/v0.2.1/docs/branding/logo.png)](https://kieransimkin.co.uk/danceflow/)
+
+By **[Kieran Simkin](https://kieransimkin.co.uk/)** · [DanceFlow ecosystem](https://kieransimkin.co.uk/danceflow/) · [Vector logo and usage guide](docs/branding/README.md).
+
+React audio timeline and transport with sequence lanes, seeking, zoom and sample-frame loops. https://kieransimkin.co.uk/
+
+
 A reusable React control for audio playback against one shared horizontal timeline. It keeps the transport, playhead, seeking, fit/zoom, follow mode, ruler and lane geometry together while allowing the host application to supply its own sequence data.
 
 It was extracted from [StemLab](https://github.com/kieransimkin/stemlab), but it has no StemLab, backend or audio-analysis dependency.
@@ -19,11 +26,7 @@ normal full-song playback.
 npm install react-timeline-sequence
 ```
 
-Until an npm release is published, install the GitHub repository directly:
-
-```bash
-npm install github:kieransimkin/react-timeline-sequence#v0.1.1
-```
+Version 0.2.1 is published on npm; tagged GitHub source remains available for inspection.
 
 React and React DOM 18 or later are peer dependencies.
 

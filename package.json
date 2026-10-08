@@ -1,7 +1,7 @@
 {
   "name": "react-timeline-sequence",
-  "version": "0.2.0",
-  "description": "A reusable React audio timeline with shared playback, zoom, seeking and sequence lanes.",
+  "version": "0.2.1",
+  "description": "React audio timeline and transport with sequence lanes, seeking, zoom and sample-frame loops. https://kieransimkin.co.uk/",
   "keywords": [
     "react",
     "audio",
@@ -10,12 +10,15 @@
     "waveform"
   ],
   "license": "MIT",
-  "author": "Kieran Simkin",
+  "author": {
+    "name": "Kieran Simkin",
+    "url": "https://kieransimkin.co.uk/"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/kieransimkin/react-timeline-sequence.git"
   },
-  "homepage": "https://github.com/kieransimkin/react-timeline-sequence#readme",
+  "homepage": "https://kieransimkin.co.uk/danceflow/",
   "bugs": {
     "url": "https://github.com/kieransimkin/react-timeline-sequence/issues"
   },
@@ -34,7 +37,8 @@
   "files": [
     "dist",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "docs/branding/"
   ],
   "sideEffects": [
     "**/*.css"

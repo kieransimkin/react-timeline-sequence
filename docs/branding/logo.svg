@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128" role="img" aria-labelledby="title desc">
+  <title id="title">React Timeline Sequence logo</title>
+  <desc id="desc">Sequence lanes and a shared playhead inside loop brackets. Original DanceFlow family mark by Kieran Simkin.</desc>
+  <rect x="3" y="3" width="122" height="122" rx="30" fill="#171124"/><rect x="8" y="8" width="112" height="112" rx="25" fill="none" stroke="#f5ce85" stroke-opacity=".35" stroke-width="1.5"/>
+  <g fill="none" stroke="#bff7df" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"><path d="M29 54h26v11H29zM69 54h28v11H69zM29 80h40v11H29zM80 80h17v11H80z"/><path d="M61 42v57M36 41V29h55v12" stroke="#f5ce85"/><path d="m61 28-7 9h14z" fill="#f5ce85" stroke="none"/></g>
+</svg>
