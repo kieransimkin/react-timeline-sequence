@@ -1,2 +1,6 @@
 # Keep source and package inputs identical across Windows and CI.
 * text=auto eol=lf
+
+# Keep original DanceFlow artwork byte-identical across platform packages.
+**/branding/*.svg text eol=lf
+**/branding/*.png binary
