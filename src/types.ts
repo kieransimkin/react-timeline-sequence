@@ -30,6 +30,8 @@ export interface TimelineSummaryItem {
 }
 
 export type TimelineLaneContent =
+  | { type: "audio"; waveform?: { min: readonly number[]; max: readonly number[]; colour?: string };
+      spectrogram?: { src: string; alt: string }; view?: "waveform" | "spectrogram" | "both" }
   | { type: "waveform"; min: readonly number[]; max: readonly number[]; colour?: string }
   | { type: "image"; src: string; alt: string; className?: string }
   | { type: "markers"; items: readonly TimelineMarker[] }
@@ -84,6 +86,10 @@ export interface TimelineSequenceProps {
   className?: string;
   labelWidth?: number;
   initialZoom?: number;
+  /** Opt-in per-lane height and composite audio view controls. */
+  laneControls?: boolean;
+  /** Wheel pans time; Ctrl/Meta zooms time, Alt resizes a lane, Shift pans lanes. */
+  wheelNavigation?: boolean;
   followPlayheadByDefault?: boolean;
   preload?: "none" | "metadata" | "auto";
   crossOrigin?: "anonymous" | "use-credentials";

@@ -1,4 +1,7 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useLayoutEffect, useEffect, useMemo, useRef, useState } from "react";
+import { AudioLane } from "./AudioLane";
+import { laneHeight, wheelPixels, zoomAtPointer, heightAtPointer, anchoredScroll, effectiveAudioView,
+  MIN_LANE_HEIGHT, MAX_LANE_HEIGHT, type AudioView } from "./display";
 import { loopRange, validLoops } from "./LoopAudio";
 import { useTimelineTransport } from "./useTimelineTransport";
 import { LaneContent } from "./LaneContent";
@@ -47,6 +50,8 @@ export function TimelineSequence({
   className = "",
   labelWidth = 230,
   initialZoom = 20,
+  laneControls = false,
+  wheelNavigation = false,
   followPlayheadByDefault = true,
   preload = "metadata",
   crossOrigin,
@@ -92,6 +97,12 @@ export function TimelineSequence({
   }, [audioSrc]);
   const [follow, setFollow] = useState(followPlayheadByDefault);
   const [zoom, setZoom] = useState(initialZoom);
+  const [laneHeights, setLaneHeights] = useState<Record<string, number>>({});
+  const [laneViews, setLaneViews] = useState<Record<string, AudioView>>({});
+  const zoomRef = useRef(initialZoom);
+  const pendingAnchor = useRef<{time: number; pointer: number} | null>(null);
+  const wheelHandler = useRef<(event: WheelEvent) => void>(() => {});
+  useEffect(() => { setLaneHeights({}); setLaneViews({}); }, [audioSrc]);
   const [viewportWidth, setViewportWidth] = useState(0);
   const [windowRange, setWindowRange] = useState<TimelineWindow>({ start: 0, end: 0 });
 
@@ -113,6 +124,21 @@ export function TimelineSequence({
     ? Math.max(0.4, Math.max(320, viewportWidth - labelWidth - 16) / duration)
     : 0.4;
   const pixelsPerSecond = Math.max(fitPixelsPerSecond, fitPixelsPerSecond * Math.pow(2, zoom / 18));
+  useLayoutEffect(() => {
+    zoomRef.current = zoom;
+    if (pendingAnchor.current && scrollerRef.current) {
+      const {time, pointer} = pendingAnchor.current;
+      scrollerRef.current.scrollLeft = anchoredScroll(time, pixelsPerSecond, pointer);
+      pendingAnchor.current = null;
+    }
+  }, [zoom, pixelsPerSecond]);
+  useEffect(() => {
+    const scroller = scrollerRef.current;
+    if (!scroller || !wheelNavigation) return;
+    const onWheel = (event: WheelEvent) => wheelHandler.current(event);
+    scroller.addEventListener("wheel", onWheel, {passive:false});
+    return () => scroller.removeEventListener("wheel", onWheel);
+  }, [wheelNavigation]);
   const trackWidth = Math.max(1, duration * pixelsPerSecond);
   const rulerTicks = useMemo(() => createRulerTicks(duration, pixelsPerSecond), [duration, pixelsPerSecond]);
 
@@ -142,7 +168,7 @@ export function TimelineSequence({
   }, [currentTime, follow, isPlaying, labelWidth, onTimeChange, pixelsPerSecond]);
 
   const seek = (event: React.MouseEvent<HTMLDivElement>) => {
-    if (duration <= 0 || (event.target as HTMLElement).closest(".rts-label, a, button, input")) return;
+    if (duration <= 0 || (event.target as HTMLElement).closest(".rts-label, a, button, input, select, textarea")) return;
     const scroller = scrollerRef.current;
     const audio = audioRef.current;
     if (!scroller || !audio) return;
@@ -153,26 +179,55 @@ export function TimelineSequence({
     transport.seek(next);
   };
 
-  const changeZoom = (next: number) => {
+  const changeZoom = (next: number, clientX?: number) => {
     const scroller = scrollerRef.current;
-    const centreTime = scroller
-      ? Math.max(0, (scroller.scrollLeft + (scroller.clientWidth - labelWidth) / 2) / pixelsPerSecond)
-      : 0;
+    next = clamp(next, 0, 100);
+    if (next === zoomRef.current) return;
+    if (scroller) {
+      const available = Math.max(1, scroller.clientWidth - labelWidth);
+      const pointer = clientX === undefined ? available / 2
+        : clamp(clientX - scroller.getBoundingClientRect().left - labelWidth, 0, available);
+      // Use the pending scale for a burst of wheel events, retaining the same
+      // musical instant under the cursor across the React layout update.
+      const prior = pendingAnchor.current;
+      const scale = fitPixelsPerSecond * Math.pow(2, zoomRef.current / 18);
+      const left = prior ? anchoredScroll(prior.time, scale, prior.pointer) : scroller.scrollLeft;
+      pendingAnchor.current = {time:(left + pointer) / scale, pointer};
+    }
+    zoomRef.current = next;
     setZoom(next);
-    requestAnimationFrame(() => {
-      const updated = scrollerRef.current;
-      if (!updated) return;
-      const nextFit = duration > 0 ? Math.max(0.4, Math.max(320, updated.clientWidth - labelWidth - 16) / duration) : 0.4;
-      const nextPixels = Math.max(nextFit, nextFit * Math.pow(2, next / 18));
-      updated.scrollLeft = Math.max(0, centreTime * nextPixels - (updated.clientWidth - labelWidth) / 2);
-      // The range effect / scroll handler use the NEW scale, not this old closure.
-    });
+  };
+  wheelHandler.current = (event: WheelEvent) => {
+    const scroller = scrollerRef.current;
+    const target = event.target instanceof Element ? event.target : null;
+    if (!scroller || !target || target.closest("input, select, textarea, button, [contenteditable=true]")) return;
+    const raw = Math.abs(event.deltaX) > Math.abs(event.deltaY) ? event.deltaX : event.deltaY;
+    const delta = wheelPixels(raw, event.deltaMode, scroller.clientWidth - labelWidth);
+    if (!delta) return;
+    if (event.ctrlKey || event.metaKey) {
+      if (duration <= 0) return;
+      event.preventDefault(); event.stopPropagation(); setFollow(false);
+      changeZoom(zoomAtPointer(zoomRef.current, delta), event.clientX);
+    } else if (event.altKey) {
+      const id = target.closest<HTMLElement>("[data-lane-id]")?.dataset.laneId;
+      const lane = lanes.find(item => item.id === id);
+      if (!laneControls || !lane) return;
+      event.preventDefault(); event.stopPropagation();
+      setLaneHeights(previous => ({...previous,
+        [lane.id]:heightAtPointer(previous[lane.id] ?? laneHeight(lane.height), delta)}));
+    } else {
+      event.preventDefault(); event.stopPropagation();
+      if (event.shiftKey) scroller.scrollTop += delta;
+      else {setFollow(false); scroller.scrollLeft += delta;}
+    }
   };
 
   const focusLoop = () => {
     if (!selectedRange || !scrollerRef.current) return;
     const wanted = Math.max(320, viewportWidth - labelWidth - 16) / (selectedRange.duration * 1.1);
     const nextZoom = clamp(18 * Math.log2(wanted / fitPixelsPerSecond), 0, 100);
+    pendingAnchor.current = null;
+    zoomRef.current = nextZoom;
     setZoom(nextZoom);
     const nextPixels = fitPixelsPerSecond * Math.pow(2, nextZoom / 18);
     requestAnimationFrame(() => {
@@ -189,7 +244,7 @@ export function TimelineSequence({
   };
 
   return <section
-    className={`rts-sequence ${className}`}
+    className={`rts-sequence ${laneControls ? "rts-display-controls" : ""} ${className}`}
     style={{ "--rts-label-width": `${labelWidth}px`, "--rts-track-width": `${trackWidth}px` } as React.CSSProperties}
   >
     <header className="rts-toolbar">
@@ -253,10 +308,37 @@ export function TimelineSequence({
           {selectedRange && <div className={`rts-loop-shade ${loopEnabled ? "" : "is-disabled"}`} aria-hidden="true"
             style={{ left: `${labelWidth + selectedRange.start * pixelsPerSecond}px`, width: `${selectedRange.duration * pixelsPerSecond}px` }} />}
           <div className="rts-lanes">
-            {lanes.map(lane => <div key={lane.id} className={`rts-lane rts-lane-${lane.kind ?? "default"} ${lane.className ?? ""}`} style={lane.height ? { "--rts-lane-height": `${lane.height}px` } as React.CSSProperties : undefined}>
-              <div className="rts-label"><div className="rts-title">{lane.title}</div>{lane.meta && <div className="rts-meta">{lane.meta}</div>}</div>
-              <div className="rts-track"><LaneContent content={lane.content} duration={duration} /></div>
-            </div>)}
+            {lanes.map(lane => {
+              const content = lane.content;
+              const audio = content.type === "audio" ? content : null;
+              const requested = laneViews[lane.id] ?? audio?.view ?? "both";
+              const view = audio ? effectiveAudioView(requested, !!audio.waveform, !!audio.spectrogram) : "both";
+              const height = laneControls ? laneHeights[lane.id] ?? laneHeight(lane.height) : lane.height;
+              const label = typeof lane.title === "string" ? lane.title : lane.id;
+              return <div key={lane.id} data-lane-id={lane.id}
+                className={`rts-lane rts-lane-${lane.kind ?? "default"} ${lane.className ?? ""}`}
+                style={height ? {"--rts-lane-height":`${height}px`} as React.CSSProperties : undefined}>
+                <div className="rts-label"><div className="rts-title">{lane.title}</div>
+                  {lane.meta && <div className="rts-meta">{lane.meta}</div>}
+                  {laneControls && <div className="rts-lane-controls">
+                    {audio && <label>View <select aria-label={`View for ${label}`} value={view}
+                      onChange={event => setLaneViews(previous => ({...previous, [lane.id]:event.target.value as AudioView}))}>
+                      <option value="waveform" disabled={!audio.waveform}>Waveform</option>
+                      <option value="spectrogram" disabled={!audio.spectrogram}>Spectrogram</option>
+                      <option value="both" disabled={!audio.waveform || !audio.spectrogram}>Both</option>
+                    </select></label>}
+                    <label>Height <input type="range" min={MIN_LANE_HEIGHT} max={MAX_LANE_HEIGHT} step="1"
+                      aria-label={`Height for ${label}`} value={height}
+                      onChange={event => setLaneHeights(previous => ({...previous,[lane.id]:laneHeight(Number(event.target.value))}))}/>
+                      <output>{height}px</output></label>
+                    <button type="button" className="rts-height-reset" aria-label={`Reset height for ${label}`}
+                      onClick={() => setLaneHeights(previous => ({...previous,[lane.id]:laneHeight(lane.height)}))}>Reset height</button>
+                  </div>}
+                </div>
+                <div className="rts-track">{audio ? <AudioLane content={audio} duration={duration} view={view}/>
+                  : <LaneContent content={content} duration={duration}/>}</div>
+              </div>;
+            })}
           </div>
           {grid.length > 0 && <div className="rts-grid" aria-hidden="true">{grid.map((marker: TimelineMarker, index) => <span key={`${marker.time}-${index}`} className={`rts-grid-line ${marker.emphasis ? "rts-grid-line-emphasis" : ""} ${marker.className ?? ""}`} style={{ left: `${marker.time * pixelsPerSecond}px` }} />)}</div>}
           <div className="rts-playhead" style={{ left: `${labelWidth + currentTime * pixelsPerSecond}px` }} aria-hidden="true" />
@@ -265,7 +347,9 @@ export function TimelineSequence({
     </div>
 
     <footer className="rts-footer">
-      <div>{footer}</div>
+      <div>{footer}{wheelNavigation && <div className="rts-navigation-help">
+        Wheel: time · Ctrl/⌘ + wheel: time zoom · Alt + wheel: channel height · Shift + wheel: channel scroll
+      </div>}</div>
       <output className="rts-window">{formatTimelineTime(windowRange.start)} — {formatTimelineTime(windowRange.end)}</output>
     </footer>
   </section>;

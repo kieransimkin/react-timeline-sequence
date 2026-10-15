@@ -1,5 +1,7 @@
 import "./styles.css";
 import "./loops.css";
+import "./display.css";
+export { TIMELINE_DISPLAY_API_VERSION } from "./display";
 
 export { TIMELINE_LOOP_API_VERSION, loopRange, LoopAudio, validLoops, wrapLoopTime } from "./LoopAudio";
 

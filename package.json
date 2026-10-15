@@ -49,7 +49,7 @@
     "build": "vite build && tsc -p tsconfig.build.json",
     "prepare": "npm run build",
     "verify:release": "node scripts/verify-release-version.mjs",
-    "test": "vitest run",
+    "test": "vitest run && node --test tests/display.node.mjs",
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {

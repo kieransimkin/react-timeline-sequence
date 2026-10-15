@@ -151,3 +151,46 @@ This project owns the reusable timeline and media transport only. Uploads, persi
 ## Licence
 
 MIT © Kieran Simkin.
+
+## Composite audio lanes and display navigation
+
+Enable `laneControls` and `wheelNavigation` on `TimelineSequence` to expose
+per-channel presentation controls. They are opt-in so existing hosts keep their
+normal scrolling unless they explicitly enable this interaction scheme.
+
+```tsx
+<TimelineSequence audioSrc="song.mp3" duration={180} laneControls wheelNavigation
+  lanes={[{id: "master", title: "Master", kind: "audio", height: 160,
+    content: {type: "audio", view: "both",
+      waveform: {min: [-.2, -.5], max: [.3, .7]},
+      spectrogram: {src: "master-spectrum.png", alt: "Master spectrogram"}}}]} />
+```
+
+The spectrogram must be a time-aligned strip without plot axes, margins or
+legends. **Both** draws that image behind a contrasting translucent waveform;
+**Waveform** and **Spectrogram** select either layer alone. Unavailable layers
+are disabled, not fabricated. The host supplies the same media extent for both.
+
+Every heading has a height slider and Reset height button. Heights are bounded
+to 128–640 CSS pixels; the default is 144 pixels unless the lane supplies its own
+height. These controls resize the lane, not sample values or audio gain. Settings
+are independent by lane ID, survive a refreshed lane inventory, and reset when
+`audioSrc` changes. They are not persisted across page reloads.
+
+Over the timeline track or heading (outside input controls):
+
+| Gesture | Action |
+| --- | --- |
+| Wheel | Pan forward/backward through time without seeking playback. |
+| Ctrl/Command + wheel | Zoom time, anchored at the time under the pointer. |
+| Alt + wheel | Resize only the lane under the pointer. |
+| Shift + wheel | Scroll vertically between channels. |
+
+Ctrl/Command takes precedence when modifiers are combined. Pan/time zoom turns
+off Follow so playback does not immediately undo manual navigation. The global
+zoom slider and Fit remain available; scrollbars, heading sliders and keyboard
+controls remain usable. Wheel interception is confined to this component and
+leaves form controls alone. No gesture starts, pauses or seeks the transport.
+
+`TIMELINE_DISPLAY_API_VERSION === 1` is exported for consuming applications that
+need a strict capability check before building a static viewer.
