@@ -35,7 +35,7 @@ normal full-song playback.
 npm install react-timeline-sequence
 ```
 
-Version 0.2.1 is published on npm; tagged GitHub source remains available for inspection.
+Install the latest stable version published on npm; tagged GitHub source remains available for inspection.
 
 React and React DOM 18 or later are peer dependencies.
 
@@ -124,7 +124,7 @@ npm run build
 
 The build emits ESM, CommonJS, TypeScript declarations and one CSS file under `dist/`.
 
-CI runs the type check, tests and production build, then retains an installable package artifact. Publishing a GitHub release sends the verified package to npmjs and GitHub Packages and attaches the tarball and checksum to the release.
+CI runs the type check, tests and production build, then retains an installable package artifact. Pushing a fresh matching `vX.Y.Z` tag starts the Release workflow: it attaches the tested tarball/checksum to the GitHub release and publishes to npmjs and GitHub Packages. Verify all jobs and registry versions, not just the release card.
 
 ## Scope
 
@@ -194,3 +194,45 @@ leaves form controls alone. No gesture starts, pauses or seeks the transport.
 
 `TIMELINE_DISPLAY_API_VERSION === 1` is exported for consuming applications that
 need a strict capability check before building a static viewer.
+
+
+## Coordinated releases and latest-release dependencies
+
+Keep `DanceRudiments`, `react-timeline-sequence`, and `stemlab` as sibling
+checkouts. The release order is **React Timeline Sequence → DanceRudiments →
+StemLab**: publish and verify the companions before updating the consuming app.
+StemLab must use their **latest stable official releases**, not an unreleased
+commit, sibling source package or vendored npm archive. Each build records exact
+released versions/commits/integrity after latest-release resolution so all its
+jobs use the same bytes; CI fails clearly when that snapshot is stale.
+
+From the parent folder, preview and then explicitly execute:
+
+```powershell
+.\stemlab\scripts\Release-DanceFlow.ps1 -ProjectsRoot .
+.\stemlab\scripts\Release-DanceFlow.ps1 -ProjectsRoot . -Execute
+```
+
+For the first migration use the same commands with
+`.\release-kit\Release-DanceFlow.ps1` after extracting the complete kit. It
+applies the three repository patches, updates versions, performs scoped commits
+and normal pushes, waits for exact-commit CI, then creates **new** release tags.
+The existing GitHub Actions workflows publish packages; no protection rules,
+credentials, old tags or assets are changed. The initial expected next-minor
+versions are only a preview proposal, never a claim that they are published.
+
+Use Node.js 24, Python 3.11+, PowerShell 5.1+, Git and authenticated GitHub CLI.
+Required main/registry/Pages jobs must pass; missing approvals and partial
+publication are blockers, not success. The default script releases all three
+projects, is opt-in via `-Execute`, and supports a saved exact-source `-Resume`
+session. A changed checkout or pre-commit build failure requires review rather
+than an automatic stash/reset or guessed recovery.
+
+StemLab's helper updates npm manifests/lock, optional native dependency minimum,
+release/build metadata and the genuinely rebuilt JS/CSS together. Its daily
+release-update workflow proposes subsequent updates by PR without auto-merging.
+A tagged StemLab release generates all four Arcadians pages and validates actual
+Pages deployment, live HTML and seekable audio. Do not start a duplicate manual
+Arcadians analysis during that tagged build. Read
+**[the full release, resume, verification and troubleshooting guide](docs/released-viewers.md)**
+before running it. Keep this README and AGENTS.md synchronized with future changes.
