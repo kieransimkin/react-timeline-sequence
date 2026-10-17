@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.4.0 - 2026-10-17
+
+- Add fixed-BPM and sample-frame-accurate variable-tempo clock matching.
+- Add editable per-line lyrics, word timings and cue positions.
+- Add optional beat snapping, parent-line constraints and keyboard editing.
+- Preserve existing timeline, playback and loop compatibility.
+
 ## 0.2.2 - 2026-10-08
 
 - Add explicit agent capability, improvement, validation and upstream PR guidance to the README and contributor instructions.
