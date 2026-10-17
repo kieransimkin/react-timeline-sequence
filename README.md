@@ -236,3 +236,39 @@ Pages deployment, live HTML and seekable audio. Do not start a duplicate manual
 Arcadians analysis during that tagged build. Read
 **[the full release, resume, verification and troubleshooting guide](docs/released-viewers.md)**
 before running it. Keep this README and AGENTS.md synchronized with future changes.
+
+## Sample-frame BPM matching and editable timing lanes (v0.4)
+
+`react-timeline-sequence` accepts an **optional** `beatClock` and `showBeatGrid`
+prop. Older timelines do not change: the overlay is off by default. Fixed
+clocks require `{mode:'fixed', bpm:120, firstBeatSeconds:0.125}` (optionally
+also `offsetPips:-16`). Variable clocks accept Stemlab's exact sample-frame
+beat anchors with `{mode:'variable', pips_per_beat:64,
+source_audio:{sample_rate:48000}, origin_beat:0, beats:[{beat:0,frame:6000},...]}`.
+`validateBeatClock`, `phasePipsAt`, `secondsAtPips`, `tempoAtSeconds`,
+`matchBeat`, and `beatGrid` are side-effect-free exports. Variable matching
+uses real anchor frames, not a fabricated constant-BPM beat at a gap.
+
+Use the new `content.type='timing'` lane for editable line, word or cue
+boundaries. The callbacks are opt-in; existing marker/block/loop tracks stay
+unchanged. Example:
+
+```tsx
+const lane = {
+  id:'lyrics', title:'Line timings',
+  content:{type:'timing',kind:'line',editable:true,
+    clock:{mode:'fixed',bpm:120,firstBeatSeconds:.125},snap:false,
+    items:[{id:'line-1',start:1.25,end:2.5,label:'Hello world'}],
+    onEdit: event => saveLocally(event), onSelect:id=>setSelected(id)}
+};
+<TimelineSequence audioSrc="/song.mp3" lanes={[lane]}
+  beatClock={{mode:'fixed',bpm:120,firstBeatSeconds:.125}}
+  showBeatGrid />
+```
+
+Pointer drags commit once on release. Keyboard arrows move by 10 ms, or
+Shift+arrow by 1 ms. End handles resize the interval. Parent bounds constrain
+word motion inside its line. Optional snapping uses a configurable tolerance
+(default 150 ms), without automatically modifying off-grid events. The parent
+component owns validation, undo, source identity, file exports and persistence.
+An invalid editor operation never changes the underlying audio.

@@ -6,6 +6,7 @@ import { loopRange, validLoops } from "./LoopAudio";
 import { useTimelineTransport } from "./useTimelineTransport";
 import { LaneContent } from "./LaneContent";
 import { chooseRulerStep, clamp, formatTimelineTime, visibleTimelineWindow } from "./time";
+import { beatGrid as renderBeatGrid } from "./beatClock";
 import type { TimelineMarker, TimelineSequenceProps, TimelineWindow } from "./types";
 
 interface RulerTick {
@@ -45,6 +46,8 @@ export function TimelineSequence({
   subtitle,
   duration: durationHint = 0,
   grid = [],
+  beatClock = null,
+  showBeatGrid = false,
   headerEnd,
   footer,
   className = "",
@@ -141,6 +144,10 @@ export function TimelineSequence({
   }, [wheelNavigation]);
   const trackWidth = Math.max(1, duration * pixelsPerSecond);
   const rulerTicks = useMemo(() => createRulerTicks(duration, pixelsPerSecond), [duration, pixelsPerSecond]);
+  const musicalGrid = useMemo(() => beatClock && showBeatGrid ?
+    renderBeatGrid(beatClock, 0, duration, 2000).map(point => ({time:point.time,emphasis:point.emphasis,label:point.label,
+      className:`rts-beat-grid-${beatClock.mode}`})) : [], [beatClock,showBeatGrid,duration]);
+  const visualGrid = [...grid, ...musicalGrid];
 
   const updateWindow = useCallback(() => {
     const scroller = scrollerRef.current;
@@ -340,7 +347,7 @@ export function TimelineSequence({
               </div>;
             })}
           </div>
-          {grid.length > 0 && <div className="rts-grid" aria-hidden="true">{grid.map((marker: TimelineMarker, index) => <span key={`${marker.time}-${index}`} className={`rts-grid-line ${marker.emphasis ? "rts-grid-line-emphasis" : ""} ${marker.className ?? ""}`} style={{ left: `${marker.time * pixelsPerSecond}px` }} />)}</div>}
+          {visualGrid.length > 0 && <div className="rts-grid" aria-hidden="true">{visualGrid.map((marker: TimelineMarker, index) => <span key={`${marker.time}-${index}`} className={`rts-grid-line ${marker.emphasis ? "rts-grid-line-emphasis" : ""} ${marker.className ?? ""}`} style={{ left: `${marker.time * pixelsPerSecond}px` }} />)}</div>}
           <div className="rts-playhead" style={{ left: `${labelWidth + currentTime * pixelsPerSecond}px` }} aria-hidden="true" />
         </div>
       </div>

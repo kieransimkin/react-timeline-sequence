@@ -1,0 +1,14 @@
+/* Opt-in timing editor. Audio/legacy marker lanes are unchanged. */
+.rts-editable-timing{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+.rts-timing-region{position:absolute;height:calc(100% - 10px);top:5px;min-width:7px;pointer-events:auto}
+.rts-timing-main{display:block;width:100%;height:100%;border:1px solid #66b7ce;border-radius:4px;background:#143b50;color:#e8f9ff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:left;font:inherit;font-size:11px;cursor:grab;touch-action:none;padding:4px 8px}
+.rts-timing-main:active{cursor:grabbing}
+.rts-timing-main.is-matched{border-color:#a5df92}
+.rts-timing-region.is-selected .rts-timing-main{outline:2px solid #ffdb82;outline-offset:-2px}
+.rts-timing-word .rts-timing-main{background:#352449;border-color:#c6a3f1}
+.rts-timing-cue .rts-timing-main{background:#42301c;border-color:#e6ac67}
+.rts-timing-end,.rts-timing-start{position:absolute;top:0;bottom:0;width:7px;padding:0;border:0;background:rgba(255,255,255,.45);cursor:ew-resize;touch-action:none}
+.rts-timing-start{left:0}.rts-timing-end{right:0}
+.rts-timing-main:focus-visible,.rts-timing-start:focus-visible,.rts-timing-end:focus-visible{outline:2px solid #fff;outline-offset:2px;z-index:3}
+@media (prefers-reduced-motion:reduce){.rts-editable-timing *{transition:none!important;animation:none!important}}
+@media (forced-colors:active){.rts-timing-main{background:Canvas;color:CanvasText;border-color:CanvasText}.rts-timing-start,.rts-timing-end{background:Highlight}}

@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import type { TimelineLaneContent, TimelineNote } from "./types";
 import { clamp, formatTimelineTime } from "./time";
+import { TimingLane } from "./TimingLane";
 
 interface LaneContentProps {
   content: TimelineLaneContent;
@@ -134,6 +135,8 @@ export function LaneContent({ content, duration }: LaneContentProps) {
       return <div className="rts-artifact"><span>{content.note}</span>{content.href && <a href={content.href} target="_blank" rel="noopener noreferrer">{content.linkLabel ?? "open"}</a>}</div>;
     case "text":
       return <div className="rts-text">{content.text}</div>;
+    case "timing":
+      return <TimingLane {...content} duration={duration} />;
     case "custom":
       return <>{content.node}</>;
   }

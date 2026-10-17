@@ -1,4 +1,6 @@
 import type { ReactNode } from "react";
+import type { TimelineBeatClock } from "./beatClock";
+import type { TimingEvent } from "./timingEdit";
 
 export interface TimelineMarker {
   time: number;
@@ -42,6 +44,10 @@ export type TimelineLaneContent =
   | { type: "summary"; items: readonly TimelineSummaryItem[] }
   | { type: "artifact"; href?: string; note: ReactNode; linkLabel?: string }
   | { type: "text"; text: string }
+  | { type: "timing"; kind: "line" | "word" | "cue"; items: readonly TimingEvent[];
+      clock?: TimelineBeatClock | null; snap?: boolean; toleranceSeconds?: number; editable?: boolean;
+      selectedId?: string | null; parents?: readonly {id:string;start:number;end:number}[];
+      onSelect?: (id:string)=>void; onEdit?: (item:TimingEvent)=>void }
   | { type: "custom"; node: ReactNode };
 
 export interface TimelineLane {
@@ -81,6 +87,10 @@ export interface TimelineSequenceProps {
   subtitle?: ReactNode;
   duration?: number;
   grid?: readonly TimelineMarker[];
+  /** Optional exact source-frame variable or fixed-BPM grid/beat-matching model. */
+  beatClock?: TimelineBeatClock | null;
+  /** OFF by default; old pages retain their original visual grid. */
+  showBeatGrid?: boolean;
   headerEnd?: ReactNode;
   footer?: ReactNode;
   className?: string;
