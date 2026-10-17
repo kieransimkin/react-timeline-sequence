@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import type { TimelineBeatClock } from "./beatClock";
-import type { TimingEvent } from "./timingEdit";
+import type { TimingEvent, TimingKind } from "./timingEdit";
 
 export interface TimelineMarker {
   time: number;
@@ -44,7 +44,7 @@ export type TimelineLaneContent =
   | { type: "summary"; items: readonly TimelineSummaryItem[] }
   | { type: "artifact"; href?: string; note: ReactNode; linkLabel?: string }
   | { type: "text"; text: string }
-  | { type: "timing"; kind: "line" | "word" | "cue"; items: readonly TimingEvent[];
+  | { type: "timing"; kind: TimingKind; items: readonly TimingEvent[];
       clock?: TimelineBeatClock | null; snap?: boolean; toleranceSeconds?: number; editable?: boolean;
       selectedId?: string | null; parents?: readonly {id:string;start:number;end:number}[];
       onSelect?: (id:string)=>void; onEdit?: (item:TimingEvent)=>void }

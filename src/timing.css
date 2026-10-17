@@ -7,6 +7,8 @@
 .rts-timing-region.is-selected .rts-timing-main{outline:2px solid #ffdb82;outline-offset:-2px}
 .rts-timing-word .rts-timing-main{background:#352449;border-color:#c6a3f1}
 .rts-timing-cue .rts-timing-main{background:#42301c;border-color:#e6ac67}
+.rts-timing-keyframe .rts-timing-region{min-width:12px}
+.rts-timing-keyframe .rts-timing-main{background:#23433d;border-color:#79dbc1}
 .rts-timing-end,.rts-timing-start{position:absolute;top:0;bottom:0;width:7px;padding:0;border:0;background:rgba(255,255,255,.45);cursor:ew-resize;touch-action:none}
 .rts-timing-start{left:0}.rts-timing-end{right:0}
 .rts-timing-main:focus-visible,.rts-timing-start:focus-visible,.rts-timing-end:focus-visible{outline:2px solid #fff;outline-offset:2px;z-index:3}

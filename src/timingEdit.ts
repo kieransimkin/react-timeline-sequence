@@ -1,6 +1,6 @@
 import { matchBeat, type TimelineBeatClock } from "./beatClock";
 
-export type TimingKind = "line" | "word" | "cue";
+export type TimingKind = "line" | "word" | "cue" | "keyframe";
 export interface TimingEvent {
   id: string;
   start: number;
