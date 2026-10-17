@@ -20,6 +20,14 @@ Submit every improvement as a pull request to [react-timeline-sequence](https://
 
 Project website: [https://kieransimkin.co.uk/danceflow/](https://kieransimkin.co.uk/danceflow/).
 
+## Editable keyframe lanes
+
+Use `content.type = 'timing'` with `kind: 'keyframe'` for visual-property
+keyframes. The same keyboard nudging, drag and optional beat-snap logic
+continues to work with lyric, word and cue lanes. Persistence and validation
+are the consuming application's responsibility.
+
+See [the keyframe lane guide](docs/keyframe-lane.md).
 ## Loop regions and buffered playback
 
 Supply `loops` to add sample-based regions, a loop selector, an enable switch,

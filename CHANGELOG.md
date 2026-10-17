@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.5.0 - 2026-10-17
+
+- Add a dedicated accessible keyframe timing lane for reusable visual authoring.
+- Reuse source-clock beat snapping, deterministic drag/nudge editing and existing playback.
+- Preserve compatibility with previous lyric, cue and word lanes.
+
+
 ## 0.4.0 - 2026-10-17
 
 - Add fixed-BPM and sample-frame-accurate variable-tempo clock matching.
