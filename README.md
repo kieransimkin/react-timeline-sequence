@@ -11,31 +11,15 @@ A reusable React control for audio playback against one shared horizontal timeli
 
 It was extracted from [StemLab](https://github.com/kieransimkin/stemlab), but it has no StemLab, backend or audio-analysis dependency.
 
+## Before every new workflow
 
-## Agents and contributors
+Check the latest stable official release and the actual installed/imported version before starting; do not infer currency from a directory name or a development checkout. Read the current release notes, tagged capability documentation and relevant Potential problems. Use the [DanceFlow release preflight](https://github.com/kieransimkin/DanceFlow/blob/main/docs/workflows/release-preflight.md) and [complete capability references](https://github.com/kieransimkin/DanceFlow/blob/main/docs/capabilities/index.md).
 
-Agents using React Timeline Sequence should inspect its available capabilities, use them fully where they fit the task, and look for useful improvements wherever possible. When a required feature is missing, or a reusable reliability, usability, performance or documentation gap is found, improve this tool rather than maintaining a separate workaround. If no worthwhile change is justified, explain why.
+People and agents should consider the full ecosystem, use all capabilities that materially serve the task, compose supported files/APIs, and improve a demonstrated reusable gap in its canonical tool. Record why no worthwhile change is justified when that is the result. Keep independent tool identities, compatibility, source clocks, privacy, model/download costs and publication/deployment permissions intact. Store weights and model-specific caches in the owning project's ignored `models/`.
 
-Submit every improvement as a pull request to [react-timeline-sequence](https://github.com/kieransimkin/react-timeline-sequence/pulls), with relevant tests, documentation and a reproducible example. Follow [CONTRIBUTING.md](CONTRIBUTING.md) and [AGENTS.md](AGENTS.md) for the contribution and validation workflow.
+## Find your route
 
-Project website: [https://kieransimkin.co.uk/danceflow/](https://kieransimkin.co.uk/danceflow/).
-
-## Editable keyframe lanes
-
-Use `content.type = 'timing'` with `kind: 'keyframe'` for visual-property
-keyframes. The same keyboard nudging, drag and optional beat-snap logic
-continues to work with lyric, word and cue lanes. Persistence and validation
-are the consuming application's responsibility.
-
-See [the keyframe lane guide](docs/keyframe-lane.md).
-## Loop regions and buffered playback
-
-Supply `loops` to add sample-based regions, a loop selector, an enable switch,
-Zoom to loop, and buffered repeat playback through the same transport/playhead.
-Looping is off until the user selects and enables a region. See
-[the loop API and integration guide](docs/loops.md) for the sample contract,
-resource lifecycle, examples and tests. Existing callers without `loops` retain
-normal full-song playback.
+[Install](#install) · [Use](#use) · [Lane content](#lane-content) · [Loop regions and buffered playback](#loop-regions-and-buffered-playback) · [Editable keyframe lanes](#editable-keyframe-lanes) · [Sample-frame BPM matching and editable timing lanes (v0.4)](#sample-frame-bpm-matching-and-editable-timing-lanes-v04) · [Composite audio lanes and display navigation](#composite-audio-lanes-and-display-navigation) · [Styling](#styling) · [Scope](#scope)
 
 ## Install
 
@@ -106,59 +90,59 @@ The built-in lane renderers cover:
 
 Lane items use seconds on the shared media timeline. The new `TimelineLoop` contract uses native source sample frames, converted using its explicit sample rate. The host remains responsible for loading and validating data; the control does not fetch analysis files or assume an API.
 
-## Styling
+## Loop regions and buffered playback
 
-Import `react-timeline-sequence/styles.css`. Colours can be changed on the control or an ancestor with CSS custom properties:
+Supply `loops` to add sample-based regions, a loop selector, an enable switch,
+Zoom to loop, and buffered repeat playback through the same transport/playhead.
+Looping is off until the user selects and enables a region. See
+[the loop API and integration guide](docs/loops.md) for the sample contract,
+resource lifecycle, examples and tests. Existing callers without `loops` retain
+normal full-song playback.
 
-```css
-.my-timeline {
-  --rts-bg: #0b1020;
-  --rts-accent: #9ef01a;
-  --rts-accent-2: #48cae4;
-  --rts-playhead: #ff4d6d;
-}
+## Editable keyframe lanes
+
+Use `content.type = 'timing'` with `kind: 'keyframe'` for visual-property
+keyframes. The same keyboard nudging, drag and optional beat-snap logic
+continues to work with lyric, word and cue lanes. Persistence and validation
+are the consuming application's responsibility.
+
+See [the keyframe lane guide](docs/keyframe-lane.md).
+
+## Sample-frame BPM matching and editable timing lanes (v0.4)
+
+`react-timeline-sequence` accepts an **optional** `beatClock` and `showBeatGrid`
+prop. Older timelines do not change: the overlay is off by default. Fixed
+clocks require `{mode:'fixed', bpm:120, firstBeatSeconds:0.125}` (optionally
+also `offsetPips:-16`). Variable clocks accept Stemlab's exact sample-frame
+beat anchors with `{mode:'variable', pips_per_beat:64,
+source_audio:{sample_rate:48000}, origin_beat:0, beats:[{beat:0,frame:6000},...]}`.
+`validateBeatClock`, `phasePipsAt`, `secondsAtPips`, `tempoAtSeconds`,
+`matchBeat`, and `beatGrid` are side-effect-free exports. Variable matching
+uses real anchor frames, not a fabricated constant-BPM beat at a gap.
+
+Use the new `content.type='timing'` lane for editable line, word or cue
+boundaries. The callbacks are opt-in; existing marker/block/loop tracks stay
+unchanged. Example:
+
+```tsx
+const lane = {
+  id:'lyrics', title:'Line timings',
+  content:{type:'timing',kind:'line',editable:true,
+    clock:{mode:'fixed',bpm:120,firstBeatSeconds:.125},snap:false,
+    items:[{id:'line-1',start:1.25,end:2.5,label:'Hello world'}],
+    onEdit: event => saveLocally(event), onSelect:id=>setSelected(id)}
+};
+<TimelineSequence audioSrc="/song.mp3" lanes={[lane]}
+  beatClock={{mode:'fixed',bpm:120,firstBeatSeconds:.125}}
+  showBeatGrid />
 ```
 
-The package uses `rts-` class names so its layout does not depend on host styles.
-
-## Development
-
-```bash
-npm ci
-npm run typecheck
-npm test
-npm run build
-```
-
-The build emits ESM, CommonJS, TypeScript declarations and one CSS file under `dist/`.
-
-CI runs the type check, tests and production build, then retains an installable package artifact. Pushing a fresh matching `vX.Y.Z` tag starts the Release workflow: it attaches the tested tarball/checksum to the GitHub release and publishes to npmjs and GitHub Packages. Verify all jobs and registry versions, not just the release card.
-
-## Scope
-
-This project owns the reusable timeline and media transport only. Uploads, persistence, streaming protocols, analysis jobs and domain-specific conversion into lanes belong to the consuming application.
-
-## Potential problems
-
-### The timeline has no usable height
-
-- **Symptom:** the toolbar appears but the lanes are collapsed or missing.
-- **Cause:** the component fills its containing block; CSS percentage heights cannot resolve without a height in the ancestor chain.
-- **Correction:** give the immediate container a fixed, viewport or grid-resolved height.
-- **Verification:** the workspace is visible and scrolls independently beneath the toolbar.
-- **Limit:** the package does not choose an application-level page height.
-
-### Audio plays but cross-origin media fails in some hosts
-
-- **Symptom:** playback or media metadata loading fails only when audio is served from another origin.
-- **Cause:** the media server and the component's `crossOrigin` setting do not agree.
-- **Correction:** configure the server's CORS response and pass `crossOrigin="anonymous"` or `"use-credentials"` as appropriate.
-- **Verification:** the browser loads metadata and playback starts without a media/CORS error.
-- **Limit:** the package cannot change response headers on the audio host.
-
-## Licence
-
-MIT © Kieran Simkin.
+Pointer drags commit once on release. Keyboard arrows move by 10 ms, or
+Shift+arrow by 1 ms. End handles resize the interval. Parent bounds constrain
+word motion inside its line. Optional snapping uses a configurable tolerance
+(default 150 ms), without automatically modifying off-grid events. The parent
+component owns validation, undo, source identity, file exports and persistence.
+An invalid editor operation never changes the underlying audio.
 
 ## Composite audio lanes and display navigation
 
@@ -203,6 +187,55 @@ leaves form controls alone. No gesture starts, pauses or seeks the transport.
 `TIMELINE_DISPLAY_API_VERSION === 1` is exported for consuming applications that
 need a strict capability check before building a static viewer.
 
+## Styling
+
+Import `react-timeline-sequence/styles.css`. Colours can be changed on the control or an ancestor with CSS custom properties:
+
+```css
+.my-timeline {
+  --rts-bg: #0b1020;
+  --rts-accent: #9ef01a;
+  --rts-accent-2: #48cae4;
+  --rts-playhead: #ff4d6d;
+}
+```
+
+The package uses `rts-` class names so its layout does not depend on host styles.
+
+## Scope
+
+This project owns the reusable timeline and media transport only. Uploads, persistence, streaming protocols, analysis jobs and domain-specific conversion into lanes belong to the consuming application.
+
+## Potential problems
+
+### The timeline has no usable height
+
+- **Symptom:** the toolbar appears but the lanes are collapsed or missing.
+- **Cause:** the component fills its containing block; CSS percentage heights cannot resolve without a height in the ancestor chain.
+- **Correction:** give the immediate container a fixed, viewport or grid-resolved height.
+- **Verification:** the workspace is visible and scrolls independently beneath the toolbar.
+- **Limit:** the package does not choose an application-level page height.
+
+### Audio plays but cross-origin media fails in some hosts
+
+- **Symptom:** playback or media metadata loading fails only when audio is served from another origin.
+- **Cause:** the media server and the component's `crossOrigin` setting do not agree.
+- **Correction:** configure the server's CORS response and pass `crossOrigin="anonymous"` or `"use-credentials"` as appropriate.
+- **Verification:** the browser loads metadata and playback starts without a media/CORS error.
+- **Limit:** the package cannot change response headers on the audio host.
+
+## Development
+
+```bash
+npm ci
+npm run typecheck
+npm test
+npm run build
+```
+
+The build emits ESM, CommonJS, TypeScript declarations and one CSS file under `dist/`.
+
+CI runs the type check, tests and production build, then retains an installable package artifact. Pushing a fresh matching `vX.Y.Z` tag starts the Release workflow: it attaches the tested tarball/checksum to the GitHub release and publishes to npmjs and GitHub Packages. Verify all jobs and registry versions, not just the release card.
 
 ## Coordinated releases and latest-release dependencies
 
@@ -245,38 +278,14 @@ Arcadians analysis during that tagged build. Read
 **[the full release, resume, verification and troubleshooting guide](docs/released-viewers.md)**
 before running it. Keep this README and AGENTS.md synchronized with future changes.
 
-## Sample-frame BPM matching and editable timing lanes (v0.4)
+## Agents and contributors
 
-`react-timeline-sequence` accepts an **optional** `beatClock` and `showBeatGrid`
-prop. Older timelines do not change: the overlay is off by default. Fixed
-clocks require `{mode:'fixed', bpm:120, firstBeatSeconds:0.125}` (optionally
-also `offsetPips:-16`). Variable clocks accept Stemlab's exact sample-frame
-beat anchors with `{mode:'variable', pips_per_beat:64,
-source_audio:{sample_rate:48000}, origin_beat:0, beats:[{beat:0,frame:6000},...]}`.
-`validateBeatClock`, `phasePipsAt`, `secondsAtPips`, `tempoAtSeconds`,
-`matchBeat`, and `beatGrid` are side-effect-free exports. Variable matching
-uses real anchor frames, not a fabricated constant-BPM beat at a gap.
+Agents using React Timeline Sequence should inspect its available capabilities, use them fully where they fit the task, and look for useful improvements wherever possible. When a required feature is missing, or a reusable reliability, usability, performance or documentation gap is found, improve this tool rather than maintaining a separate workaround. If no worthwhile change is justified, explain why.
 
-Use the new `content.type='timing'` lane for editable line, word or cue
-boundaries. The callbacks are opt-in; existing marker/block/loop tracks stay
-unchanged. Example:
+Submit every improvement as a pull request to [react-timeline-sequence](https://github.com/kieransimkin/react-timeline-sequence/pulls), with relevant tests, documentation and a reproducible example. Follow [CONTRIBUTING.md](CONTRIBUTING.md) and [AGENTS.md](AGENTS.md) for the contribution and validation workflow.
 
-```tsx
-const lane = {
-  id:'lyrics', title:'Line timings',
-  content:{type:'timing',kind:'line',editable:true,
-    clock:{mode:'fixed',bpm:120,firstBeatSeconds:.125},snap:false,
-    items:[{id:'line-1',start:1.25,end:2.5,label:'Hello world'}],
-    onEdit: event => saveLocally(event), onSelect:id=>setSelected(id)}
-};
-<TimelineSequence audioSrc="/song.mp3" lanes={[lane]}
-  beatClock={{mode:'fixed',bpm:120,firstBeatSeconds:.125}}
-  showBeatGrid />
-```
+Project website: [https://kieransimkin.co.uk/danceflow/](https://kieransimkin.co.uk/danceflow/).
 
-Pointer drags commit once on release. Keyboard arrows move by 10 ms, or
-Shift+arrow by 1 ms. End handles resize the interval. Parent bounds constrain
-word motion inside its line. Optional snapping uses a configurable tolerance
-(default 150 ms), without automatically modifying off-grid events. The parent
-component owns validation, undo, source identity, file exports and persistence.
-An invalid editor operation never changes the underlying audio.
+## Licence
+
+MIT © Kieran Simkin.

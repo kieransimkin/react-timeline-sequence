@@ -5,3 +5,6 @@ package-artifacts/
 .release-test/
 *.log
 .DS_Store
+
+# Project-local model weights and caches
+models/
