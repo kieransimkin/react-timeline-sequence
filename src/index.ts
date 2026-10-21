@@ -5,7 +5,7 @@ import "./timing.css";
 import "./lyrics.css";
 export { TIMELINE_LYRIC_AUDITION_API_VERSION, lyricIntervals, lyricsAtTime, lyricLineStatesAtTime } from "./lyrics";
 export type { LyricInterval, LyricLineState, LyricWordState } from "./lyrics";
-export { TIMELINE_DISPLAY_API_VERSION } from "./display";
+export { TIMELINE_DISPLAY_API_VERSION, MAX_TIMELINE_ZOOM } from "./display";
 
 export { TIMELINE_LOOP_API_VERSION, loopRange, LoopAudio, validLoops, wrapLoopTime } from "./LoopAudio";
 

@@ -85,6 +85,16 @@ export function useTimelineTransport(
     }
   }, [audioRef, pause, playAt]);
 
+  /** Seek on the shared source clock and start playback, even when paused. */
+  const seekAndPlay = useCallback((next: number) => {
+    const loop = current.current.activeLoop;
+    if (loop) {
+      const range = loopRange(loop);
+      next = wrapLoopTime(next, range.start, range.end);
+    }
+    void playAt(next);
+  }, [playAt]);
+
   const toggle = useCallback(() => {
     if (desired.current) { pause(); return; }
     let next = readTime();
@@ -140,5 +150,5 @@ export function useTimelineTransport(
   const ended = useCallback(() => {
     if (mode.current === "media") pause();
   }, [pause]);
-  return { time, playing, loading, error, toggle, seek, ended, fail };
+  return { time, playing, loading, error, toggle, seek, seekAndPlay, ended, fail };
 }

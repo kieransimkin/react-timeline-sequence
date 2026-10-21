@@ -34,6 +34,30 @@ with sync_playwright() as pw:
         print("Audio metadata ready", flush=True)
         captions = page.get_by_label("Timed lyrics", exact=True)
 
+        zoom = page.get_by_label("Timeline zoom", exact=True)
+        assert zoom.get_attribute("max") == "180"
+        fit_width = page.locator(".rts-ruler-track").evaluate("el => el.scrollWidth")
+        zoom.fill("180")
+        page.wait_for_function("width => document.querySelector('.rts-ruler-track').scrollWidth > width * 500", arg=fit_width)
+        page.screenshot(path=str(media / "timeline-precision-controls.png"), full_page=True)
+        page.get_by_role("button", name="Fit", exact=True).click()
+        results["precision_zoom_1024x_fit"] = True
+
+        page.locator(".rts-scroller").focus()
+        page.keyboard.press("Space")
+        page.wait_for_function("!document.querySelector('audio').paused")
+        page.keyboard.press("Space")
+        page.wait_for_function("document.querySelector('audio').paused")
+        results["space_toggles_playback"] = True
+
+        ruler = page.locator(".rts-ruler-track")
+        ruler_box = ruler.bounding_box()
+        page.mouse.click(ruler_box["x"] + ruler_box["width"] * .5, ruler_box["y"] + ruler_box["height"] * .5)
+        page.wait_for_function("document.querySelector('audio').currentTime > 5.9 && !document.querySelector('audio').paused")
+        page.keyboard.press("Space")
+        page.wait_for_function("document.querySelector('audio').paused")
+        results["ruler_click_seeks_and_plays"] = True
+
         def seek(seconds):
             # Click the actual waveform track, scrolling the shared scroller when needed.
             scroller = page.locator(".rts-scroller")

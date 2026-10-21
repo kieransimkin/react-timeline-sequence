@@ -2,7 +2,7 @@ import { useCallback, useLayoutEffect, useEffect, useMemo, useRef, useState } fr
 import { AudioLane } from "./AudioLane";
 import { LyricAudition } from "./LyricAudition";
 import { laneHeight, wheelPixels, zoomAtPointer, heightAtPointer, anchoredScroll, effectiveAudioView,
-  MIN_LANE_HEIGHT, MAX_LANE_HEIGHT, type AudioView } from "./display";
+  MIN_LANE_HEIGHT, MAX_LANE_HEIGHT, MAX_TIMELINE_ZOOM, type AudioView } from "./display";
 import { loopRange, validLoops } from "./LoopAudio";
 import { useTimelineTransport } from "./useTimelineTransport";
 import { LaneContent } from "./LaneContent";
@@ -13,6 +13,12 @@ import type { TimelineMarker, TimelineSequenceProps, TimelineWindow } from "./ty
 interface RulerTick {
   time: number;
   major: boolean;
+}
+
+export function ignoresPlaybackShortcut(target: EventTarget | null): boolean {
+  return target instanceof Element && !!target.closest(
+    "input, textarea, select, button, a, [contenteditable=true], [role=textbox]",
+  );
 }
 
 function createRulerTicks(duration: number, pixelsPerSecond: number): RulerTick[] {
@@ -117,6 +123,17 @@ export function TimelineSequence({
   }, [durationHint]);
 
   useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.code !== "Space" || event.repeat || event.ctrlKey || event.metaKey || event.altKey ||
+          ignoresPlaybackShortcut(event.target)) return;
+      event.preventDefault();
+      transport.toggle();
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [transport.toggle]);
+
+  useEffect(() => {
     const scroller = scrollerRef.current;
     if (!scroller) return;
     const update = () => setViewportWidth(scroller.clientWidth);
@@ -186,12 +203,13 @@ export function TimelineSequence({
     const contentX = event.clientX - rect.left + scroller.scrollLeft - labelWidth;
     if (contentX < 0) return;
     const next = clamp(contentX / pixelsPerSecond, 0, duration);
-    transport.seek(next);
+    if ((event.target as HTMLElement).closest(".rts-ruler-track")) transport.seekAndPlay(next);
+    else transport.seek(next);
   };
 
   const changeZoom = (next: number, clientX?: number) => {
     const scroller = scrollerRef.current;
-    next = clamp(next, 0, 100);
+    next = clamp(next, 0, MAX_TIMELINE_ZOOM);
     if (next === zoomRef.current) return;
     if (scroller) {
       const available = Math.max(1, scroller.clientWidth - labelWidth);
@@ -235,7 +253,7 @@ export function TimelineSequence({
   const focusLoop = () => {
     if (!selectedRange || !scrollerRef.current) return;
     const wanted = Math.max(320, viewportWidth - labelWidth - 16) / (selectedRange.duration * 1.1);
-    const nextZoom = clamp(18 * Math.log2(wanted / fitPixelsPerSecond), 0, 100);
+    const nextZoom = clamp(18 * Math.log2(wanted / fitPixelsPerSecond), 0, MAX_TIMELINE_ZOOM);
     pendingAnchor.current = null;
     zoomRef.current = nextZoom;
     setZoom(nextZoom);
@@ -266,7 +284,7 @@ export function TimelineSequence({
         <button type="button" className="rts-button rts-play" onClick={transport.toggle} aria-label={isPlaying || transport.loading ? "Pause" : "Play"}>{transport.loading ? "…" : isPlaying ? "❚❚" : "▶"}</button>
         <output className="rts-time" aria-live="off">{formatTimelineTime(currentTime)} / {formatTimelineTime(duration)}</output>
         <button type="button" className="rts-button" onClick={() => changeZoom(0)}>Fit</button>
-        <label className="rts-control"><span>Zoom</span><input aria-label="Timeline zoom" type="range" min="0" max="100" value={zoom} onChange={event => changeZoom(Number(event.target.value))} /></label>
+        <label className="rts-control"><span>Zoom</span><input aria-label="Timeline zoom" type="range" min="0" max={MAX_TIMELINE_ZOOM} value={zoom} onChange={event => changeZoom(Number(event.target.value))} /></label>
         <label className="rts-control"><input type="checkbox" checked={follow} onChange={event => setFollow(event.target.checked)} /><span>Follow</span></label>
         {lyricAudition && <label className="rts-control rts-audition-toggle"><input type="checkbox"
           aria-label="Audition lyrics" checked={auditionEnabled}
@@ -298,11 +316,13 @@ export function TimelineSequence({
     />
 
     <div className={`rts-workspace ${lyricAudition && auditionEnabled ? "rts-with-audition" : ""}`}>
-      <div ref={scrollerRef} className="rts-scroller" onScroll={updateWindow} onClick={seek}>
+      <div ref={scrollerRef} className="rts-scroller" tabIndex={0} aria-label="Timeline editor"
+        onPointerDown={event => { if (!ignoresPlaybackShortcut(event.target)) event.currentTarget.focus({preventScroll:true}); }}
+        onScroll={updateWindow} onClick={seek}>
         <div className="rts-inner">
           <div className="rts-ruler-row">
             <div className="rts-label rts-ruler-label">TIME</div>
-            <div className="rts-ruler-track">
+            <div className="rts-ruler-track" title="Click a time to seek and play" aria-label="Timeline ruler. Click a time to seek and play.">
               {rulerTicks.map(tick => <span key={tick.time} className={`rts-tick ${tick.major ? "rts-tick-major" : ""}`} style={{ left: `${tick.time * pixelsPerSecond}px` }}>
                 {tick.major && <span className="rts-tick-label">{rulerLabel(tick.time, pixelsPerSecond)}</span>}
               </span>)}
@@ -362,9 +382,9 @@ export function TimelineSequence({
     </div>
 
     <footer className="rts-footer">
-      <div>{footer}{wheelNavigation && <div className="rts-navigation-help">
-        Wheel: time · Ctrl/⌘ + wheel: time zoom · Alt + wheel: channel height · Shift + wheel: channel scroll
-      </div>}</div>
+      <div>{footer}<div className="rts-navigation-help">
+        Space: play/pause · Ruler click: seek and play{wheelNavigation && <> · Wheel: time · Ctrl/⌘ + wheel: time zoom · Alt + wheel: channel height · Shift + wheel: channel scroll</>}
+      </div></div>
       <output className="rts-window">{formatTimelineTime(windowRange.start)} — {formatTimelineTime(windowRange.end)}</output>
     </footer>
   </section>;

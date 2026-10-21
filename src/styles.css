@@ -77,7 +77,8 @@
 .rts-ruler-label { display: flex; align-items: center; color: var(--rts-muted); font-size: 10px; letter-spacing: .1em; }
 .rts-track, .rts-ruler-track { width: var(--rts-track-width); position: relative; overflow: hidden; }
 .rts-track { min-height: var(--rts-lane-height); cursor: crosshair; background-image: linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px); background-size: 100px 100%; }
-.rts-ruler-track { height: 34px; }
+.rts-ruler-track { height: 34px; cursor: pointer; }
+.rts-scroller:focus-visible { outline: 2px solid var(--rts-accent); outline-offset: -2px; }
 .rts-tick { position: absolute; bottom: 0; width: 1px; height: 10px; background: #536078; }
 .rts-tick-major { height: 16px; background: #76849d; }
 .rts-tick-label { position: absolute; top: -13px; left: 4px; color: #9da9bf; font-size: 10px; font-variant-numeric: tabular-nums; white-space: nowrap; }
