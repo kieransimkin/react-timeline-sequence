@@ -1,5 +1,7 @@
 /** Display-only geometry. No audio samples or analysis values are changed. */
-export const TIMELINE_DISPLAY_API_VERSION = 1;
+export const TIMELINE_DISPLAY_API_VERSION = 2;
+/** Precision ceiling for word-level timing edits: 180 maps to 1024x fit. */
+export const MAX_TIMELINE_ZOOM = 180;
 export const MIN_LANE_HEIGHT = 128;
 export const MAX_LANE_HEIGHT = 640;
 export type AudioView = "waveform" | "spectrogram" | "both";
@@ -14,7 +16,7 @@ export function wheelPixels(delta: number, mode: number, viewport: number): numb
   return Number.isFinite(delta) ? delta * (mode === 1 ? 16 : mode === 2 ? viewport : 1) : 0;
 }
 export function zoomAtPointer(zoom: number, delta: number): number {
-  return Math.max(0, Math.min(100, zoom - Math.max(-240, Math.min(240, delta)) * .08));
+  return Math.max(0, Math.min(MAX_TIMELINE_ZOOM, zoom - Math.max(-240, Math.min(240, delta)) * .08));
 }
 export function heightAtPointer(height: number, delta: number): number {
   return laneHeight(height * Math.exp(-Math.max(-240, Math.min(240, delta)) * .002));

@@ -217,7 +217,18 @@ zoom slider and Fit remain available; scrollbars, heading sliders and keyboard
 controls remain usable. Wheel interception is confined to this component and
 leaves form controls alone. No gesture starts, pauses or seeks the transport.
 
-`TIMELINE_DISPLAY_API_VERSION === 1` is exported for consuming applications that
+The Zoom control now reaches 1,024× the fitted scale for accurate word-level
+placement while retaining Fit as an immediate reset. Press **Space** to play or
+pause from anywhere outside a text field or interactive control. Clicking a
+numbered time on the ruler seeks to that source-clock position and starts
+playback immediately, which makes repeated boundary auditions much faster.
+
+![Actual precision-zoom timeline with the ruler and playback shortcut help](docs/media/timeline-precision-controls.png)
+
+Actual browser capture from the synthetic lyric-audition fixture; it contains
+test tones and test words rather than campaign audio.
+
+`TIMELINE_DISPLAY_API_VERSION === 2` is exported for consuming applications that
 need a strict capability check before building a static viewer.
 
 ## Styling

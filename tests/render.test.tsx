@@ -20,5 +20,8 @@ describe("TimelineSequence", () => {
     expect(markup).toContain("Example song");
     expect(markup).toContain("detected events");
     expect(markup).toContain("aria-label=\"Play\"");
+    expect(markup).toContain("max=\"180\"");
+    expect(markup).toContain("Timeline ruler. Click a time to seek and play.");
+    expect(markup).toContain("Space: play/pause");
   });
 });

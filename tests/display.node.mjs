@@ -16,9 +16,10 @@ test('wheel pixel, line and page deltas',()=>{
  assert.equal(d.wheelPixels(3,0,800),3);assert.equal(d.wheelPixels(3,1,800),48);
  assert.equal(d.wheelPixels(-1,2,800),-800);assert.equal(d.wheelPixels(Infinity,0,800),0);
 });
-test('time zoom is monotone and bounded',()=>{
+test('time zoom is monotone and bounded at the precision ceiling',()=>{
  assert.ok(d.zoomAtPointer(40,-120)>40);assert.ok(d.zoomAtPointer(40,120)<40);
- assert.equal(d.zoomAtPointer(0,120),0);assert.equal(d.zoomAtPointer(100,-120),100);
+ assert.equal(d.zoomAtPointer(0,120),0);assert.equal(d.zoomAtPointer(d.MAX_TIMELINE_ZOOM,-120),d.MAX_TIMELINE_ZOOM);
+ assert.equal(d.MAX_TIMELINE_ZOOM,180);
 });
 test('height changes independently of horizontal scale',()=>{
  assert.ok(d.heightAtPointer(160,-120)>160);assert.ok(d.heightAtPointer(160,120)<160);
