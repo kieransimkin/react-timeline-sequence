@@ -1,13 +1,14 @@
 # Lyric timing audition
 
-The preview paints the active lyric lines as subtitles over the supplied cover.
+The preview paints the active lyric lines as subtitles over the supplied cover
+and highlights the word under the playhead when per-word timing is supplied.
 It consumes the same source time as the timeline playhead. Play, Pause, timeline
 seeks, buffered loop repeats and live timing edits therefore share one transport.
 Showing or hiding the preview never starts playback or creates another player.
 
 ![Actual desktop audition UI showing cover artwork and the current timed line](media/lyric-audition-desktop.png)
 
-Actual v0.6.0 standalone browser capture. The mountain cover is an original vector
+Actual standalone browser capture. The mountain cover is an original vector
 illustration; the words and audio are synthetic test fixtures, not a song campaign.
 
 ## Connect a selected audio channel
@@ -21,7 +22,8 @@ illustration; the words and audio are synthetic test fixtures, not a song campai
     artworkSrc: coverUrl,
     artworkAlt: "Description of the song cover",
     audioLabel: selectedChannel.name,
-    laneId: "canonical-lyrics",
+    items: lyricLines,
+    words: lyricWords,
     enabledByDefault: true,
   }}
 />
@@ -43,12 +45,14 @@ inferred from names, channel labels or duration.
 | `audioLabel` | Optional React content identifying the selected `audioSrc`. |
 | `laneId` | Exact `type:'timing', kind:'line'` lane ID. A missing pinned lane stays unavailable. |
 | `items` | Optional readonly `{start, end?, label?}[]` in source seconds. Overrides lane selection. Use a host parser for LRC/SRT or legacy block lanes. |
+| `words` | Optional readonly `{start, end, label?, lineId?}[]` in source seconds. The active `[start,end)` word is highlighted while the complete line remains visible. Use `lineId` for overlapping vocal lines. |
 | `enabledByDefault` | Initial state of the Audition lyrics checkbox; defaults to true. The visitor's toggle is retained when the source changes. |
 
 When neither `items` nor `laneId` is supplied, the first line timing lane is used.
 With several line lanes, a selector chooses which to audition. Word, cue and
 keyframe lanes are never implicitly treated as lyric lines. Updated lane items
 are rendered immediately; the preview never modifies or saves timings.
+`TIMELINE_LYRIC_AUDITION_API_VERSION` is `2` for the active-word contract.
 
 ## Subtitle boundaries and appearance
 
@@ -60,9 +64,16 @@ non-finite or reversed bounds are ignored. Overlapping lines appear together;
 the compiler sorts a copy of the data, preserving the host's input.
 
 Text is escaped by React, wraps within the cover, and keeps embedded newlines.
+Timed words use start-inclusive, end-exclusive bounds. A boundary activates the
+following word without a double highlight. Parallel lead and backing lines keep
+separate word sets when their `lineId` values differ. Line-only callers retain
+whole-line rendering; the component does not split text or invent word timing.
 The cover uses `object-fit:contain` without cropping. Subtitle text is white over
 a dark backing and has no animation or automatic screen-reader announcements.
 Use the host's intentionally chosen font through `--rts-subtitle-font` as needed.
+Customize the active state through `--rts-audition-active-text`,
+`--rts-audition-active-bg` and `--rts-audition-active-glow`. Forced-colour mode
+uses the visitor's system highlight colours.
 No font download or campaign typography change is performed by this component.
 
 ![Actual tablet layout of lyric audition](media/lyric-audition-tablet.png)
