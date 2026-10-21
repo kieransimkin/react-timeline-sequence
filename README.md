@@ -100,19 +100,25 @@ and buffered loop wrap; edits to the supplied line timings appear immediately.
 ```tsx
 <TimelineSequence audioSrc={selectedChannel.url} lanes={lanes} duration={180}
   lyricAudition={{artworkSrc: "/cover.jpg", artworkAlt: "Song cover",
-    audioLabel: selectedChannel.name, laneId: "lyrics"}} />
+    audioLabel: selectedChannel.name, items: lyricLines, words: lyricWords}} />
 ```
 
 The preview uses `type:'timing', kind:'line'` lanes, with a lyric lane selector
 when several are supplied. Hosts can alternatively provide `lyricAudition.items`
-for already-parsed LRC or other line timings. Explicit end times leave real lyric
+for already-parsed LRC or other line timings and `lyricAudition.words` for
+per-word source-clock intervals. The current word is highlighted while its full
+line remains visible. A word `lineId` associates it with the correct lyric during
+overlapping lead and backing vocals; containment is used only when no association
+is supplied. Explicit end times leave real lyric
 gaps; start-only lines end at the next timestamp or the known source duration.
 The host keeps ownership of the selected channel, artwork, parsing and timing
 source. Existing callers without this optional prop retain their previous UI.
+Consumers can require `TIMELINE_LYRIC_AUDITION_API_VERSION >= 2` before supplying
+the optional word track.
 
 ![Actual lyric audition UI with synthetic test text over original vector artwork](docs/media/lyric-audition-desktop.png)
 
-Actual v0.6.0 browser capture, using original synthetic tones and test text.
+Actual browser capture, using original synthetic tones and test text.
 [Play the silent UI demonstration](docs/media/lyric-audition-demo.webm).
 See [the audition guide](docs/lyric-audition.md) for the API, responsive captures,
 demo instructions, source-clock contract, missing-data states and validation.

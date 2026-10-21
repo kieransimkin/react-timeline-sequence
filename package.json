@@ -1,6 +1,6 @@
 {
   "name": "react-timeline-sequence",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "React audio timeline and transport with sequence lanes, seeking, zoom and sample-frame loops. https://kieransimkin.co.uk/",
   "keywords": [
     "react",

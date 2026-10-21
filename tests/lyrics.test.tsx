@@ -1,6 +1,6 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import { lyricIntervals, lyricsAtTime } from "../src/lyrics";
+import { lyricIntervals, lyricsAtTime, lyricLineStatesAtTime } from "../src/lyrics";
 import { TimelineSequence } from "../src/TimelineSequence";
 
 describe("lyric audition intervals", () => {
@@ -38,6 +38,25 @@ describe("lyric audition intervals", () => {
   });
 });
 
+describe("active lyric word", () => {
+  const lines = [{id:"lead",start:1,end:3,label:"Light will win"}];
+  const words = [{lineId:"lead",start:1,end:1.5,label:"Light"},
+    {lineId:"lead",start:1.5,end:2,label:"will"},{lineId:"lead",start:2,end:3,label:"win"}];
+  it("uses exclusive word ends and keeps the complete active line visible", () => {
+    expect(lyricLineStatesAtTime(lines,words,1.75,4)[0]?.words.map(word => [word.text,word.active]))
+      .toEqual([["Light",false],["will",true],["win",false]]);
+    expect(lyricLineStatesAtTime(lines,words,2,4)[0]?.words.map(word => word.active))
+      .toEqual([false,false,true]);
+  });
+  it("preserves simultaneous lead and backing lines by line identity", () => {
+    const parallel = [...lines,{id:"backing",start:1,end:3,label:"Glow"}];
+    const states = lyricLineStatesAtTime(parallel,[...words,{lineId:"backing",start:1,end:3,label:"Glow"}],1.2,4);
+    expect(states).toHaveLength(2);
+    expect(states[0]?.words.map(word=>word.text)).toEqual(["Light","will","win"]);
+    expect(states[1]?.words.map(word=>word.text)).toEqual(["Glow"]);
+  });
+});
+
 describe("lyric audition opt-in and safe rendering", () => {
   const lane = {id:"lyrics",title:"Lyrics",content:{type:"timing" as const,kind:"line" as const,
     items:[{id:"one",start:0,end:2,label:"<script> & Unicode: café"}]}};
@@ -52,6 +71,13 @@ describe("lyric audition opt-in and safe rendering", () => {
     expect(html).toContain('alt="Test cover"');
     expect(html).toContain("Vocals");
     expect(html).toContain("&lt;script&gt; &amp; Unicode: café");
+  });
+  it("marks the exact active word without hiding its neighbours", () => {
+    const html = renderToStaticMarkup(<TimelineSequence audioSrc="/vocals.wav" duration={4} lanes={[]}
+      lyricAudition={{items:[{id:"line",start:0,end:2,label:"Light will win"}],
+        words:[{lineId:"line",start:0,end:1,label:"Light"},{lineId:"line",start:1,end:2,label:"win"}]}}/>);
+    expect(html).toContain('class="rts-audition-word is-active" aria-current="true">Light</span>');
+    expect(html).toContain('class="rts-audition-word">win</span>');
   });
   it("never substitutes a different lane when a pinned source is missing", () => {
     const html = renderToStaticMarkup(<TimelineSequence audioSrc="/song.wav" duration={4} lanes={[lane]}

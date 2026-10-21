@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.7.0 - 2026-10-21
+
+- Add optional source-clock word intervals to lyric audition and visibly highlight the active word.
+- Preserve the full current line and separate simultaneous lead/backing words through explicit line identity.
+- Keep line-only callers unchanged, add forced-colour styling and document host-controlled highlight tokens.
+
 ## 0.6.0 - 2026-10-21
 
 - Add opt-in timed-lyric subtitles over cover artwork using the existing selected audio and loop transport.

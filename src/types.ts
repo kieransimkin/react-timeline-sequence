@@ -17,6 +17,18 @@ export interface TimelineBlock {
   className?: string;
 }
 
+/** Optional identity retained by lyric audition hosts so timed words can be
+ * associated with the correct line, including overlapping backing vocals. */
+export interface TimelineLyricLine extends TimelineBlock {
+  id?: string;
+}
+
+/** A word on the same source clock as its lyric line. lineId is recommended
+ * whenever lines overlap; without it, the word is matched by containment. */
+export interface TimelineLyricWord extends TimelineBlock {
+  lineId?: string;
+}
+
 export interface TimelineNote extends TimelineBlock {
   value: number;
 }
@@ -72,7 +84,10 @@ export interface TimelineLyricAudition {
   /** Exact line lane to preview. Omit to select among kind:'line' timing lanes. */
   laneId?: string;
   /** Host-adapted lines, e.g. parsed LRC. Overrides lane selection when supplied. */
-  items?: readonly TimelineBlock[];
+  items?: readonly TimelineLyricLine[];
+  /** Optional per-word timing. Words remain visible with their line while the
+   * word whose [start,end) contains the playhead receives the active state. */
+  words?: readonly TimelineLyricWord[];
   /** Name of the selected audio channel supplied through audioSrc. */
   audioLabel?: ReactNode;
   enabledByDefault?: boolean;

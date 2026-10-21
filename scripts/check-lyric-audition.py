@@ -54,6 +54,8 @@ with sync_playwright() as pw:
         expect(captions).to_have_text("")
         seek(1.5)
         expect(captions).to_have_text("Follow the light")
+        expect(captions.locator(".rts-audition-word.is-active")).to_have_text("Follow")
+        assert captions.locator(".rts-audition-word").count() == 3
         page.screenshot(path=str(media / "lyric-audition-desktop.png"), full_page=True)
         page.get_by_role("button", name="Play", exact=True).click()
         page.wait_for_function("document.querySelector('audio').currentTime > 1.7 && !document.querySelector('audio').paused")
@@ -69,6 +71,7 @@ with sync_playwright() as pw:
         assert page.get_by_test_id("source-time").inner_text() == paused
         seek(4.5)
         expect(captions).to_have_text("Across the quiet sky")
+        expect(captions.locator(".rts-audition-word.is-active")).to_have_text("Across")
         seek(1.5)
         page.get_by_role("button", name="Move first lyric to 2s").click()
         expect(captions).to_have_text("")

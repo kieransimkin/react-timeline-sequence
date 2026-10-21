@@ -42,7 +42,11 @@ function Demo() {
       title="Lyric timing audition" subtitle="Seek the timeline or edit a line, then press Play"
       onTimeChange={setTime} labelWidth={155} initialZoom={0}
       lyricAudition={{artworkSrc:cover?"./cover.svg":undefined,artworkAlt:"Original vector illustration of mountains beneath a moon",
-        audioLabel:channel?"Channel B · 440 Hz":"Channel A · 220 Hz"}}
+        audioLabel:channel?"Channel B · 440 Hz":"Channel A · 220 Hz",
+        words:[{lineId:"one",start:1,end:1.65,label:"Follow"},{lineId:"one",start:1.65,end:2.25,label:"the"},
+          {lineId:"one",start:2.25,end:3,label:"light"},{lineId:"two",start:4,end:4.55,label:"Across"},
+          {lineId:"two",start:4.55,end:5,label:"the"},{lineId:"two",start:5,end:5.45,label:"quiet"},
+          {lineId:"two",start:5.45,end:6,label:"sky"}]}}
       loops={[{id:"phrase",label:"First phrase",startSample:16000,endSample:48000,sampleRate:16000}]}/></div>
   </main>;
 }

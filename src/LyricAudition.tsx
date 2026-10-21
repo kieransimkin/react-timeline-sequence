@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { lyricIntervals, lyricsAtTime } from "./lyrics";
+import { lyricIntervals, lyricLineStatesAtTime } from "./lyrics";
 import type { TimelineLane, TimelineLyricAudition } from "./types";
 
 export function LyricAudition({ config, lanes, time, duration, playing }: {
@@ -12,7 +12,8 @@ export function LyricAudition({ config, lanes, time, duration, playing }: {
     ?? (config.laneId === undefined && selection === null ? lineLanes[0] : undefined);
   const items = config.items ?? (lane?.content.type === "timing" ? lane.content.items : []);
   const intervals = useMemo(() => lyricIntervals(items, duration), [items, duration]);
-  const lines = lyricsAtTime(intervals, time);
+  const lines = useMemo(() => lyricLineStatesAtTime(items, config.words ?? [], time, duration),
+    [items, config.words, time, duration]);
   const [failedArtwork, setFailedArtwork] = useState<string | undefined>();
   const hasArtwork = config.artworkSrc && failedArtwork !== config.artworkSrc;
 
@@ -34,7 +35,12 @@ export function LyricAudition({ config, lanes, time, duration, playing }: {
         onError={() => setFailedArtwork(config.artworkSrc)} />
         : <span className="rts-audition-no-art">Cover artwork unavailable</span>}
       <div className="rts-audition-subtitles" aria-label="Timed lyrics" aria-live="off">
-        {lines.map((line, index) => <span key={index}>{line}</span>)}
+        {lines.map((line, index) => <span className="rts-audition-line" key={index}>
+          {line.words.length ? line.words.map((word, wordIndex) => <span
+            className={`rts-audition-word${word.active ? " is-active" : ""}`}
+            aria-current={word.active ? "true" : undefined}
+            key={`${word.start}:${word.end}:${wordIndex}`}>{word.text}</span>) : line.text}
+        </span>)}
       </div>
     </div>
     <output className="rts-audition-status" aria-live="off">

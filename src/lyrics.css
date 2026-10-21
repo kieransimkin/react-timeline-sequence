@@ -31,7 +31,17 @@
   text-align: center;
   pointer-events: none;
 }
-.rts-audition-subtitles span { max-width: 100%; padding: .2em .45em; background: rgb(0 0 0 / 85%); border-radius: 3px; white-space: pre-line; overflow-wrap: anywhere; }
+.rts-audition-line { max-width: 100%; padding: .2em .45em; background: rgb(0 0 0 / 85%); border-radius: 3px; white-space: pre-line; overflow-wrap: anywhere; }
+.rts-audition-word { display: inline-block; padding: .04em .12em; border-radius: .18em; }
+.rts-audition-word + .rts-audition-word { margin-left: .22em; }
+.rts-audition-word.is-active {
+  color: var(--rts-audition-active-text, #211000);
+  background: var(--rts-audition-active-bg, #ffd166);
+  box-shadow: 0 0 0 .08em rgb(255 255 255 / 80%), 0 0 .65em var(--rts-audition-active-glow, #ffad33);
+}
+@media (forced-colors: active) {
+  .rts-audition-word.is-active { color: HighlightText; background: Highlight; outline: 2px solid Highlight; box-shadow: none; }
+}
 .rts-audition-status { display: block; margin-top: 10px; }
 @media (max-width: 640px) {
   .rts-workspace.rts-with-audition { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(140px, 1fr) auto; }

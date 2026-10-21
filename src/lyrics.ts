@@ -1,11 +1,24 @@
-import type { TimelineBlock } from "./types";
+import type { TimelineBlock, TimelineLyricLine, TimelineLyricWord } from "./types";
 
-export const TIMELINE_LYRIC_AUDITION_API_VERSION = 1;
+export const TIMELINE_LYRIC_AUDITION_API_VERSION = 2;
 
 export interface LyricInterval {
   start: number;
   end: number;
   text: string;
+  id?: string;
+}
+
+export interface LyricWordState {
+  text: string;
+  start: number;
+  end: number;
+  active: boolean;
+}
+
+export interface LyricLineState {
+  text: string;
+  words: readonly LyricWordState[];
 }
 
 /** Normalize without changing the host's timings. Explicit ends are exclusive;
@@ -25,7 +38,8 @@ export function lyricIntervals(items: readonly TimelineBlock[], duration: number
     const next = ends[index];
     const end = Math.min(item.end ?? next, limit);
     if (!Number.isFinite(end) || end <= item.start) return [];
-    return [{ start: item.start, end, text: item.label ?? "" }];
+    return [{ start: item.start, end, text: item.label ?? "",
+      ...("id" in item && typeof item.id === "string" ? {id: item.id} : {}) }];
   });
 }
 
@@ -33,4 +47,27 @@ export function lyricsAtTime(intervals: readonly LyricInterval[], time: number):
   if (!Number.isFinite(time) || time < 0) return [];
   return intervals.filter(item => item.start <= time && time < item.end && item.text.trim())
     .map(item => item.text);
+}
+
+/** Return visible lines and their timed words without inventing timing. Line
+ * and word ends are exclusive. Explicit lineId association preserves parallel
+ * lead/backing-vocal lines; otherwise words are matched by time containment. */
+export function lyricLineStatesAtTime(
+  lines: readonly TimelineLyricLine[], words: readonly TimelineLyricWord[],
+  time: number, duration: number,
+): LyricLineState[] {
+  if (!Number.isFinite(time) || time < 0) return [];
+  const normalizedLines = lyricIntervals(lines, duration);
+  return normalizedLines.flatMap(line => {
+    if (!(line.start <= time && time < line.end) || !line.text.trim()) return [];
+    const lineWords = words.filter(word => {
+      if (!Number.isFinite(word.start) || !Number.isFinite(word.end) || word.end! <= word.start) return false;
+      if (line.id && word.lineId !== undefined) return word.lineId === line.id;
+      return word.start >= line.start && word.end! <= line.end;
+    }).slice().sort((a, b) => a.start - b.start).map(word => ({
+      text: word.label ?? "", start: word.start, end: word.end!,
+      active: word.start <= time && time < word.end!,
+    })).filter(word => word.text.trim());
+    return [{text: line.text, words: lineWords}];
+  });
 }
