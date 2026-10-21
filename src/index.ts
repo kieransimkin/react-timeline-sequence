@@ -2,6 +2,9 @@ import "./styles.css";
 import "./loops.css";
 import "./display.css";
 import "./timing.css";
+import "./lyrics.css";
+export { TIMELINE_LYRIC_AUDITION_API_VERSION, lyricIntervals, lyricsAtTime } from "./lyrics";
+export type { LyricInterval } from "./lyrics";
 export { TIMELINE_DISPLAY_API_VERSION } from "./display";
 
 export { TIMELINE_LOOP_API_VERSION, loopRange, LoopAudio, validLoops, wrapLoopTime } from "./LoopAudio";
@@ -12,6 +15,7 @@ export type {
   TimelineBlock,
   TimelineLoop,
   TimelineLane,
+  TimelineLyricAudition,
   TimelineLaneContent,
   TimelineMarker,
   TimelineNote,

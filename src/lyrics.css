@@ -1,0 +1,43 @@
+.rts-audition-toggle { white-space: nowrap; }
+.rts-workspace.rts-with-audition {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(180px, 30%);
+}
+.rts-with-audition > .rts-scroller { position: relative; inset: auto; min-width: 0; }
+.rts-audition {
+  min-width: 0;
+  overflow: auto;
+  border-left: 1px solid var(--rts-line);
+  padding: 14px;
+  background: var(--rts-panel);
+}
+.rts-audition-heading { display: grid; gap: 8px; margin-bottom: 12px; font-size: 12px; }
+.rts-audition-source, .rts-audition-status { color: var(--rts-muted); overflow-wrap: anywhere; font-size: 12px; }
+.rts-audition-heading select { max-width: 100%; font: inherit; }
+.rts-audition-cover { position: relative; aspect-ratio: 1; width: 100%; background: #070a10; overflow: hidden; border-radius: 8px; }
+.rts-audition-cover img { display: block; width: 100%; height: 100%; object-fit: contain; }
+.rts-audition-no-art { display: grid; place-items: center; height: 100%; color: var(--rts-muted); font-size: 12px; }
+.rts-audition-subtitles {
+  position: absolute;
+  inset: auto 5% 6%;
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  color: #fff;
+  font-family: var(--rts-subtitle-font, inherit);
+  font-size: clamp(14px, 1.7vw, 24px);
+  font-weight: 650;
+  line-height: 1.35;
+  text-align: center;
+  pointer-events: none;
+}
+.rts-audition-subtitles span { max-width: 100%; padding: .2em .45em; background: rgb(0 0 0 / 85%); border-radius: 3px; white-space: pre-line; overflow-wrap: anywhere; }
+.rts-audition-status { display: block; margin-top: 10px; }
+@media (max-width: 640px) {
+  .rts-workspace.rts-with-audition { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(140px, 1fr) auto; }
+  .rts-audition { display: grid; grid-template-columns: minmax(0, 1fr) 120px; gap: 8px 12px; border-left: 0; border-top: 1px solid var(--rts-line); padding: 10px; }
+  .rts-audition-heading { margin: 0; }
+  .rts-audition-cover { grid-column: 2; grid-row: 1 / 3; }
+  .rts-audition-subtitles { font-size: 12px; }
+  .rts-audition-status { margin: 0; }
+}
