@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.6.0 - 2026-10-21
+
+- Add opt-in timed-lyric subtitles over cover artwork using the existing selected audio and loop transport.
+- Support editable line lanes, lyric-lane selection and host-adapted start/end or start-only lines with explicit gaps.
+- Add responsive cover preview, hide/show controls and accurate missing artwork/lyrics states.
+- Include a synthetic two-channel demo, browser regression/capture script and illustrated guide.
+- Update the pinned Vite patch within its existing supported range; dependency audit is clean.
+
 ## 0.5.0 - 2026-10-17
 
 - Add a dedicated accessible keyframe timing lane for reusable visual authoring.

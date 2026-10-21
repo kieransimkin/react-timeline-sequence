@@ -1,6 +1,6 @@
 {
   "name": "react-timeline-sequence",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "React audio timeline and transport with sequence lanes, seeking, zoom and sample-frame loops. https://kieransimkin.co.uk/",
   "keywords": [
     "react",
@@ -41,12 +41,15 @@
     "docs/branding/",
     "AGENTS.md",
     "CONTRIBUTING.md",
-    "docs/released-viewers.md"
+    "docs/released-viewers.md",
+    "docs/lyric-audition.md",
+    "docs/media/"
   ],
   "sideEffects": [
     "**/*.css"
   ],
   "scripts": {
+    "demo:lyrics": "vite --host 127.0.0.1 --port 5197 --strictPort --open /examples/lyric-audition/",
     "build": "vite build && tsc -p tsconfig.build.json",
     "prepare": "npm run build",
     "verify:release": "node scripts/verify-release-version.mjs",

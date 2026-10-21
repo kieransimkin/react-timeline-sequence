@@ -65,6 +65,19 @@ export interface TimelineWindow {
   end: number;
 }
 
+/** Lyrics use seconds on the same source timeline as audioSrc and loop playback. */
+export interface TimelineLyricAudition {
+  artworkSrc?: string;
+  artworkAlt?: string;
+  /** Exact line lane to preview. Omit to select among kind:'line' timing lanes. */
+  laneId?: string;
+  /** Host-adapted lines, e.g. parsed LRC. Overrides lane selection when supplied. */
+  items?: readonly TimelineBlock[];
+  /** Name of the selected audio channel supplied through audioSrc. */
+  audioLabel?: ReactNode;
+  enabledByDefault?: boolean;
+}
+
 /** Source sample frames; endSample is EXCLUSIVE. audioSrc, when present, is an exact
  * PCM/WAV excerpt of this region (not the full master or an encoder-padded MP3). */
 export interface TimelineLoop {
@@ -79,6 +92,8 @@ export interface TimelineLoop {
 
 export interface TimelineSequenceProps {
   audioSrc: string;
+  /** Opt-in cover-art subtitle audition using the existing shared transport. */
+  lyricAudition?: TimelineLyricAudition;
   loops?: readonly TimelineLoop[];
   onLoopSelect?: (loop: TimelineLoop | null) => void;
   onLoopEnabledChange?: (enabled: boolean) => void;

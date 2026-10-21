@@ -19,7 +19,7 @@ People and agents should consider the full ecosystem, use all capabilities that 
 
 ## Find your route
 
-[Install](#install) · [Use](#use) · [Lane content](#lane-content) · [Loop regions and buffered playback](#loop-regions-and-buffered-playback) · [Editable keyframe lanes](#editable-keyframe-lanes) · [Sample-frame BPM matching and editable timing lanes (v0.4)](#sample-frame-bpm-matching-and-editable-timing-lanes-v04) · [Composite audio lanes and display navigation](#composite-audio-lanes-and-display-navigation) · [Styling](#styling) · [Scope](#scope)
+[Install](#install) · [Use](#use) · [Lane content](#lane-content) · [Lyric timing audition](#lyric-timing-audition) · [Loop regions and buffered playback](#loop-regions-and-buffered-playback) · [Editable keyframe lanes](#editable-keyframe-lanes) · [Sample-frame BPM matching and editable timing lanes (v0.4)](#sample-frame-bpm-matching-and-editable-timing-lanes-v04) · [Composite audio lanes and display navigation](#composite-audio-lanes-and-display-navigation) · [Styling](#styling) · [Scope](#scope)
 
 ## Install
 
@@ -89,6 +89,33 @@ The built-in lane renderers cover:
 - custom React nodes for application-specific content.
 
 Lane items use seconds on the shared media timeline. The new `TimelineLoop` contract uses native source sample frames, converted using its explicit sample rate. The host remains responsible for loading and validating data; the control does not fetch analysis files or assume an API.
+
+## Lyric timing audition
+
+Pass `lyricAudition` to display timed lyrics as subtitles on cover artwork beside
+the timeline. The **Audition lyrics** switch shows or hides the preview. It uses
+the existing selected `audioSrc` and shared transport for playback, paused seeking
+and buffered loop wrap; edits to the supplied line timings appear immediately.
+
+```tsx
+<TimelineSequence audioSrc={selectedChannel.url} lanes={lanes} duration={180}
+  lyricAudition={{artworkSrc: "/cover.jpg", artworkAlt: "Song cover",
+    audioLabel: selectedChannel.name, laneId: "lyrics"}} />
+```
+
+The preview uses `type:'timing', kind:'line'` lanes, with a lyric lane selector
+when several are supplied. Hosts can alternatively provide `lyricAudition.items`
+for already-parsed LRC or other line timings. Explicit end times leave real lyric
+gaps; start-only lines end at the next timestamp or the known source duration.
+The host keeps ownership of the selected channel, artwork, parsing and timing
+source. Existing callers without this optional prop retain their previous UI.
+
+![Actual lyric audition UI with synthetic test text over original vector artwork](docs/media/lyric-audition-desktop.png)
+
+Actual v0.6.0 browser capture, using original synthetic tones and test text.
+[Play the silent UI demonstration](docs/media/lyric-audition-demo.webm).
+See [the audition guide](docs/lyric-audition.md) for the API, responsive captures,
+demo instructions, source-clock contract, missing-data states and validation.
 
 ## Loop regions and buffered playback
 

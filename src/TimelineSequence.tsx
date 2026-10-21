@@ -1,5 +1,6 @@
 import { useCallback, useLayoutEffect, useEffect, useMemo, useRef, useState } from "react";
 import { AudioLane } from "./AudioLane";
+import { LyricAudition } from "./LyricAudition";
 import { laneHeight, wheelPixels, zoomAtPointer, heightAtPointer, anchoredScroll, effectiveAudioView,
   MIN_LANE_HEIGHT, MAX_LANE_HEIGHT, type AudioView } from "./display";
 import { loopRange, validLoops } from "./LoopAudio";
@@ -38,6 +39,7 @@ function rulerLabel(time: number, pixelsPerSecond: number): string {
 
 export function TimelineSequence({
   audioSrc,
+  lyricAudition,
   loops = [],
   onLoopSelect,
   onLoopEnabledChange,
@@ -64,6 +66,7 @@ export function TimelineSequence({
   onPlaybackError,
 }: TimelineSequenceProps) {
   const audioRef = useRef<HTMLAudioElement>(null);
+  const [auditionEnabled, setAuditionEnabled] = useState(lyricAudition?.enabledByDefault ?? true);
   const scrollerRef = useRef<HTMLDivElement>(null);
   const [duration, setDuration] = useState(Math.max(0, durationHint));
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -265,6 +268,9 @@ export function TimelineSequence({
         <button type="button" className="rts-button" onClick={() => changeZoom(0)}>Fit</button>
         <label className="rts-control"><span>Zoom</span><input aria-label="Timeline zoom" type="range" min="0" max="100" value={zoom} onChange={event => changeZoom(Number(event.target.value))} /></label>
         <label className="rts-control"><input type="checkbox" checked={follow} onChange={event => setFollow(event.target.checked)} /><span>Follow</span></label>
+        {lyricAudition && <label className="rts-control rts-audition-toggle"><input type="checkbox"
+          aria-label="Audition lyrics" checked={auditionEnabled}
+          onChange={event => setAuditionEnabled(event.target.checked)} /><span>Audition lyrics</span></label>}
       </div>
       <div className="rts-header-end">{headerEnd}</div>
       {availableLoops.length > 0 && <div className="rts-loop-controls" aria-label="Loop controls">
@@ -291,7 +297,7 @@ export function TimelineSequence({
       onError={() => transport.fail(new Error(audioRef.current?.error?.message || "Audio playback failed"))}
     />
 
-    <div className="rts-workspace">
+    <div className={`rts-workspace ${lyricAudition && auditionEnabled ? "rts-with-audition" : ""}`}>
       <div ref={scrollerRef} className="rts-scroller" onScroll={updateWindow} onClick={seek}>
         <div className="rts-inner">
           <div className="rts-ruler-row">
@@ -351,6 +357,8 @@ export function TimelineSequence({
           <div className="rts-playhead" style={{ left: `${labelWidth + currentTime * pixelsPerSecond}px` }} aria-hidden="true" />
         </div>
       </div>
+      {lyricAudition && auditionEnabled && <LyricAudition config={lyricAudition} lanes={lanes}
+        time={currentTime} duration={duration} playing={isPlaying} />}
     </div>
 
     <footer className="rts-footer">
