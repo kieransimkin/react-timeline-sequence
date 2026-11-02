@@ -330,6 +330,15 @@ Submit every improvement as a pull request to [react-timeline-sequence](https://
 
 Project website: [https://kieransimkin.co.uk/danceflow/](https://kieransimkin.co.uk/danceflow/).
 
+## Cross-platform repository bytes
+
+The root `.gitattributes` stores and checks out text as LF on every platform;
+declared binary media, archives, fonts and native libraries remain byte-exact.
+Package hashes therefore do not depend on `core.autocrlf`.
+
+This repository-byte policy has no interface whose screenshot or video would add
+verification value. `git ls-files --eol`, package checks and CI are the evidence.
+
 ## Licence
 
 MIT © Kieran Simkin.

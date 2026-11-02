@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.8.1 - 2026-11-02
+
+- Normalize Git text to LF for identical package-source hashes across Windows and Linux while retaining CRLF for Windows command scripts.
+
 ## 0.7.0 - 2026-10-21
 
 - Add optional source-clock word intervals to lyric audition and visibly highlight the active word.
